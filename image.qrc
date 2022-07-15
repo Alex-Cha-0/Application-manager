@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="images">
+    <file>image/add_icon.png</file>
+    <file>image/icons8-close order.png</file>
+    <file>image/folder.png</file>
+    <file>image/accepted.png</file>
+    <file>image/open-email.png</file>
+    <file>image/refresh.png</file>
+    <file>image/reply.png</file>
+  </qresource>
+</RCC>
