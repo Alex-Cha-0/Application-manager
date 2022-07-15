@@ -12,7 +12,7 @@ from ldap import GetNameFromLdap
 # import urllib3
 import pymssql as mc
 from datetime import datetime, timedelta
-from authentication import *
+
 from reply_email import Ui_MainWindow_reply
 
 from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL
