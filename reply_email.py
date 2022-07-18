@@ -128,6 +128,7 @@ class Ui_MainWindow_reply(object):
         textBrowser_reply = self.textBrowser_reply.toPlainText()
         textEdit_perlyemail = self.textEdit_perlyemail.toPlainText()
         textFrom = self.textEdit_from.toPlainText()
+
         body = textEdit_perlyemail + '\n' + '\n' + '-------------' + '\n' + textFrom + '\n' + '\n' + textBrowser_reply
         return body
 

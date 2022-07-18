@@ -41,11 +41,11 @@ class System(QMainWindow, Ui_MainWindow):
         self.label_specialist.setText(self.GetNameSpecialist())
         """Получение данных из столбцов"""
         # Получение данных из колонки (ID письма)
-        self.tableWidget_table.cellDoubleClicked.connect(self.CellWasClicked)
+        self.tableWidget_table.cellClicked.connect(self.CellWasClicked)
         # Выполнение select запроса SQL с ID письма
-        self.tableWidget_table.cellDoubleClicked.connect(self.cellDoubleClicked)
+        self.tableWidget_table.cellClicked.connect(self.cellDoubleClicked)
         # Действия в таблице вложений
-        self.tableWidget.cellDoubleClicked.connect(self.tableWidget_cellDoubleClicked)
+        self.tableWidget.cellClicked.connect(self.tableWidget_cellDoubleClicked)
         # Открыть диалог ответа на письмо
         self.toolButton_reply.clicked.connect(self.toolButton_replyclicked)
         # Кнопка закрытия заявки
@@ -391,16 +391,21 @@ class System(QMainWindow, Ui_MainWindow):
         id = self.CellWasClicked()
         if not self.CheckOrderIsOpen():
             try:
-                """Контрольный срок"""
-                ks = datetime.today() + timedelta(days=1)
-                date = ks.strftime('%Y-%m-%d %H:%M:%S')
-                """-----------------"""
+
+
                 open_order = True
                 specialist = self.GetNameSpecialist()
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
                 # Sql query
+                sql_select = cursor.execute(f"""SELECT datetime_send FROM email WHERE id = '{id}'""")
+                datetime_send = cursor.fetchall()
+                """Контрольный срок"""
+                ks = datetime_send[0][0] + timedelta(days=1)
+                date = ks.strftime('%Y-%m-%d %H:%M:%S')
+                """-----------------"""
+
                 sql_insert_blob_query = f"""UPDATE email SET specialist = '{specialist}',control_period = '{date}', open_order = '{open_order}'   WHERE id = '{id}' """
                 # Convert data into tuple format
 
@@ -602,5 +607,3 @@ class System(QMainWindow, Ui_MainWindow):
                     self.tableWidget_table.item(row, 4).setBackground(QtGui.QColor(252, 204, 208))
         except Exception as erorr:
             print(erorr)
-
-

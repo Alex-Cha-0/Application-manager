@@ -128,9 +128,10 @@ class ConnectToExchange(object):
     def GetItemAccountInbox(self):
         global cursor, conn_database
         last_date = self.LastDate()
-        date_str = str(datetime.today())
+        # date_str = str(datetime.today())
+        # date = date_str.replace(':', '')
+        date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         date = date_str.replace(':', '')
-
         for item in self.account.inbox.filter(is_read=False).order_by('-datetime_received'):
             print(self.StatusConnect())
 
@@ -148,7 +149,7 @@ class ConnectToExchange(object):
                     item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to)
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
-                print(item.subject, ':', 'Успешно занесено в базу', 'id письма - ')
+                print(f'"{item.subject}" :, Успешно занесено в базу')
                 # Insert into Attachments DB
                 item.is_read = True
                 item.save()
