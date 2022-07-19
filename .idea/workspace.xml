@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="изменение В CORP" />
+    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="добаление описания" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -220,7 +220,21 @@
       <option name="project" value="LOCAL" />
       <updated>1658236793744</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="giti">
+      <created>1658237072749</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1658237072749</updated>
+    </task>
+    <task id="LOCAL-00010" summary="добаление описания">
+      <created>1658237259738</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1658237259738</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -239,7 +253,9 @@
     <MESSAGE value="test" />
     <MESSAGE value="изменение описания скрипта" />
     <MESSAGE value="изменение В CORP" />
-    <option name="LAST_COMMIT_MESSAGE" value="изменение В CORP" />
+    <MESSAGE value="giti" />
+    <MESSAGE value="добаление описания" />
+    <option name="LAST_COMMIT_MESSAGE" value="добаление описания" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
