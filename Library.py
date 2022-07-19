@@ -1,3 +1,5 @@
+"""Библиотека методов"""
+
 import os
 import time
 import pymssql
