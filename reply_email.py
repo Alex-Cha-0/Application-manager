@@ -1,3 +1,5 @@
+"""Скрипт ответа на email"""
+
 from requests_kerberos import HTTPKerberosAuth
 from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox
 import exchangelib.autodiscover
