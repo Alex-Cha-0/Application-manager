@@ -1,0 +1,7 @@
+cfg.py
+test.py
+app_manager.ui
+authentication.ui
+reply_email.ui
+app_settings.exe
+*.pyc
