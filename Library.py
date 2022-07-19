@@ -16,8 +16,7 @@ from datetime import datetime, timedelta
 
 from reply_email import Ui_MainWindow_reply
 
-from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL
-
+from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP
 
 
 class System(QMainWindow, Ui_MainWindow):
@@ -103,7 +102,8 @@ class System(QMainWindow, Ui_MainWindow):
         server = SERVERAD
         user = USERAD
         password = PASSWORDAD
-        result = GetNameFromLdap(server, user, password).Cnname()
+        corp = CORP
+        result = GetNameFromLdap(server, user, password, corp).Cnname()
         return result
 
     def GoToPage1(self):
