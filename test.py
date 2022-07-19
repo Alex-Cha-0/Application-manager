@@ -21,5 +21,5 @@ class Character():
 
 unit = Character('Ork')
 unit._current_speed = 50
-print()
+print
 
