@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="">
+    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="Yes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Library.py" beforeDir="false" afterPath="$PROJECT_DIR$/Library.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cfg.py" beforeDir="false" afterPath="$PROJECT_DIR$/cfg.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/read_inbox_exchange.py" beforeDir="false" afterPath="$PROJECT_DIR$/read_inbox_exchange.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reply_email.py" beforeDir="false" afterPath="$PROJECT_DIR$/reply_email.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/app_manager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -47,7 +44,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.read_inbox_exchange">
+  <component name="RunManager" selected="Python.test">
     <configuration name="Library" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Application manager" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -155,9 +152,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.read_inbox_exchange" />
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.authentication" />
       </list>
     </recent_temporary>
@@ -171,7 +168,30 @@
       <option name="presentableId" value="Default" />
       <updated>1655976777124</updated>
     </task>
+    <task id="LOCAL-00001" summary="Yes">
+      <created>1658140812166</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1658140812166</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Yes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Yes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -582,6 +582,7 @@ class Ui_MainWindow(object):
         self.tableWidget_table.resizeColumnToContents(0)
 
 
+
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)

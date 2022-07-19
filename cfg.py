@@ -10,3 +10,4 @@ USERMSSQL = 'alex'
 PASSWORDMSSQL = 'Renovation21'
 DATABASEMSSQL = 'alex'
 DIRECTORYATTACHMENTS = 'C:\\attachments'
+
