@@ -205,13 +205,14 @@ class Ui_MainWindow_reply(object):
     def UpdateReplyEmail(self):
         id = self.IdCellInAppManger()
         body = self.GetTExtFromWindow()
+        reply = True
         try:
 
             conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                             database=DATABASEMSSQL)
             cursor = conn_database.cursor()
             # Sql query
-            sql_insert_blob_query = f"""UPDATE email SET text_body = '{body}'  WHERE id = '{id}' """
+            sql_insert_blob_query = f"""UPDATE email SET text_body = '{body}', reply_email = '{reply}'  WHERE id = '{id}' """
             # Convert data into tuple format
 
             result = cursor.execute(sql_insert_blob_query)

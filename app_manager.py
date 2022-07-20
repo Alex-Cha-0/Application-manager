@@ -7,7 +7,9 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+
 import resources_from_qt_rc
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -35,9 +37,9 @@ class Ui_MainWindow(object):
         self.tabWidget.setFont(font)
         self.tabWidget.setAcceptDrops(False)
         self.tabWidget.setStyleSheet("font: 12pt \"Calibri\";\n"
-"\n"
-"\n"
-"")
+                                     "\n"
+                                     "\n"
+                                     "")
         self.tabWidget.setIconSize(QtCore.QSize(45, 45))
         self.tabWidget.setElideMode(QtCore.Qt.TextElideMode.ElideLeft)
         self.tabWidget.setDocumentMode(False)
@@ -58,11 +60,12 @@ class Ui_MainWindow(object):
         self.tableWidget_table.setFont(font)
         self.tableWidget_table.setMouseTracking(False)
         self.tableWidget_table.setStyleSheet("font: 25 10pt \"Calibri\";\n"
-"selection-background-color: #b0e0e6\n"
-"")
+                                             "selection-background-color: #b0e0e6\n"
+                                             "")
         self.tableWidget_table.setFrameShape(QtWidgets.QFrame.Shape.Panel)
         self.tableWidget_table.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.tableWidget_table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
+        self.tableWidget_table.setSizeAdjustPolicy(
+            QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
         self.tableWidget_table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.tableWidget_table.setAlternatingRowColors(True)
         self.tableWidget_table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -110,8 +113,8 @@ class Ui_MainWindow(object):
         self.label_specialist.setFont(font)
         self.label_specialist.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.label_specialist.setStyleSheet("border-radius: 4px;\n"
-"background-color: #b0e0e6;\n"
-"color:white")
+                                            "background-color: #b0e0e6;\n"
+                                            "color:white")
         self.label_specialist.setText("")
         self.label_specialist.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_specialist.setWordWrap(False)
@@ -132,8 +135,8 @@ class Ui_MainWindow(object):
         self.label_sender = QtWidgets.QLabel(self.tab)
         self.label_sender.setGeometry(QtCore.QRect(920, 50, 961, 31))
         self.label_sender.setStyleSheet("font: 25 16pt \"Microsoft YaHei UI\";\n"
-"\n"
-"")
+                                        "\n"
+                                        "")
         self.label_sender.setText("")
         self.label_sender.setObjectName("label_sender")
         self.label_time_send = QtWidgets.QLabel(self.tab)
@@ -146,9 +149,9 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.label_time_send.setFont(font)
         self.label_time_send.setStyleSheet("font: 9pt \"Calibri\";\n"
-"border-radius: 4px;\n"
-"background-color: #b0e0e6;\n"
-"color:white")
+                                           "border-radius: 4px;\n"
+                                           "background-color: #b0e0e6;\n"
+                                           "color:white")
         self.label_time_send.setText("")
         self.label_time_send.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_time_send.setObjectName("label_time_send")
@@ -188,37 +191,37 @@ class Ui_MainWindow(object):
         self.toolButton_reply.setGeometry(QtCore.QRect(1150, 10, 51, 41))
         self.toolButton_reply.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ArrowCursor))
         self.toolButton_reply.setStyleSheet("QToolButton { /* all types of tool button */\n"
-"    border: 2px solid #b0e0e6;\n"
-"    border-radius: 6px;\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
-"}\n"
-"\n"
-"QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
-"    padding-right: 20px; /* make way for the popup button */\n"
-"}\n"
-"\n"
-"QToolButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
-"QToolButton::menu-button {\n"
-"    border: 2px solid gray;\n"
-"    border-top-right-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"    /* 16px width + 4px for border = 20px allocated above */\n"
-"    width: 16px;\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow {\n"
-"    image: url(downarrow.png);\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow:open {\n"
-"    top: 1px; left: 1px; /* shift it a bit */\n"
-"}")
+                                            "    border: 2px solid #b0e0e6;\n"
+                                            "    border-radius: 6px;\n"
+                                            "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                            "                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
+                                            "}\n"
+                                            "\n"
+                                            "QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
+                                            "    padding-right: 20px; /* make way for the popup button */\n"
+                                            "}\n"
+                                            "\n"
+                                            "QToolButton:pressed {\n"
+                                            "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                            "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                            "}\n"
+                                            "\n"
+                                            "/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
+                                            "QToolButton::menu-button {\n"
+                                            "    border: 2px solid gray;\n"
+                                            "    border-top-right-radius: 6px;\n"
+                                            "    border-bottom-right-radius: 6px;\n"
+                                            "    /* 16px width + 4px for border = 20px allocated above */\n"
+                                            "    width: 16px;\n"
+                                            "}\n"
+                                            "\n"
+                                            "QToolButton::menu-arrow {\n"
+                                            "    image: url(downarrow.png);\n"
+                                            "}\n"
+                                            "\n"
+                                            "QToolButton::menu-arrow:open {\n"
+                                            "    top: 1px; left: 1px; /* shift it a bit */\n"
+                                            "}")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/image/reply.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.toolButton_reply.setIcon(icon)
@@ -232,38 +235,38 @@ class Ui_MainWindow(object):
         self.toolButton_accept.setStatusTip("")
         self.toolButton_accept.setWhatsThis("")
         self.toolButton_accept.setStyleSheet("QToolButton { /* all types of tool button */\n"
-"    font: 8pt \"MS Shell Dlg 2\";\n"
-"    border: 2px solid #98f08b;\n"
-"    border-radius: 6px;\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
-"}\n"
-"\n"
-"QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
-"    padding-right: 20px; /* make way for the popup button */\n"
-"}\n"
-"\n"
-"QToolButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
-"QToolButton::menu-button {\n"
-"    border: 2px solid gray;\n"
-"    border-top-right-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"    /* 16px width + 4px for border = 20px allocated above */\n"
-"    width: 16px;\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow {\n"
-"    image: url(downarrow.png);\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow:open {\n"
-"    top: 1px; left: 1px; /* shift it a bit */\n"
-"}")
+                                             "    font: 8pt \"MS Shell Dlg 2\";\n"
+                                             "    border: 2px solid #98f08b;\n"
+                                             "    border-radius: 6px;\n"
+                                             "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                             "                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
+                                             "}\n"
+                                             "\n"
+                                             "QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
+                                             "    padding-right: 20px; /* make way for the popup button */\n"
+                                             "}\n"
+                                             "\n"
+                                             "QToolButton:pressed {\n"
+                                             "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                             "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                             "}\n"
+                                             "\n"
+                                             "/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
+                                             "QToolButton::menu-button {\n"
+                                             "    border: 2px solid gray;\n"
+                                             "    border-top-right-radius: 6px;\n"
+                                             "    border-bottom-right-radius: 6px;\n"
+                                             "    /* 16px width + 4px for border = 20px allocated above */\n"
+                                             "    width: 16px;\n"
+                                             "}\n"
+                                             "\n"
+                                             "QToolButton::menu-arrow {\n"
+                                             "    image: url(downarrow.png);\n"
+                                             "}\n"
+                                             "\n"
+                                             "QToolButton::menu-arrow:open {\n"
+                                             "    top: 1px; left: 1px; /* shift it a bit */\n"
+                                             "}")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/images/image/add_icon.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.toolButton_accept.setIcon(icon1)
@@ -274,37 +277,37 @@ class Ui_MainWindow(object):
         self.toolButton_refresh.setGeometry(QtCore.QRect(10, 10, 51, 41))
         self.toolButton_refresh.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ArrowCursor))
         self.toolButton_refresh.setStyleSheet("QToolButton { /* all types of tool button */\n"
-"    border: 2px solid #b0e0e6;\n"
-"    border-radius: 6px;\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
-"}\n"
-"\n"
-"QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
-"    padding-right: 20px; /* make way for the popup button */\n"
-"}\n"
-"\n"
-"QToolButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
-"QToolButton::menu-button {\n"
-"    border: 2px solid gray;\n"
-"    border-top-right-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"    /* 16px width + 4px for border = 20px allocated above */\n"
-"    width: 16px;\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow {\n"
-"    image: url(downarrow.png);\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow:open {\n"
-"    top: 1px; left: 1px; /* shift it a bit */\n"
-"}")
+                                              "    border: 2px solid #b0e0e6;\n"
+                                              "    border-radius: 6px;\n"
+                                              "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                              "                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
+                                              "}\n"
+                                              "\n"
+                                              "QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
+                                              "    padding-right: 20px; /* make way for the popup button */\n"
+                                              "}\n"
+                                              "\n"
+                                              "QToolButton:pressed {\n"
+                                              "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                              "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                              "}\n"
+                                              "\n"
+                                              "/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
+                                              "QToolButton::menu-button {\n"
+                                              "    border: 2px solid gray;\n"
+                                              "    border-top-right-radius: 6px;\n"
+                                              "    border-bottom-right-radius: 6px;\n"
+                                              "    /* 16px width + 4px for border = 20px allocated above */\n"
+                                              "    width: 16px;\n"
+                                              "}\n"
+                                              "\n"
+                                              "QToolButton::menu-arrow {\n"
+                                              "    image: url(downarrow.png);\n"
+                                              "}\n"
+                                              "\n"
+                                              "QToolButton::menu-arrow:open {\n"
+                                              "    top: 1px; left: 1px; /* shift it a bit */\n"
+                                              "}")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/images/image/refresh.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.toolButton_refresh.setIcon(icon2)
@@ -328,31 +331,31 @@ class Ui_MainWindow(object):
         self.label_statusneworder = QtWidgets.QLabel(self.tab)
         self.label_statusneworder.setGeometry(QtCore.QRect(310, 20, 301, 21))
         self.label_statusneworder.setStyleSheet("font: 75 9pt \"Calibri\";\n"
-"")
+                                                "")
         self.label_statusneworder.setText("")
         self.label_statusneworder.setObjectName("label_statusneworder")
         self.radioButton_all = QtWidgets.QRadioButton(self.tab)
         self.radioButton_all.setGeometry(QtCore.QRect(630, 16, 82, 31))
         self.radioButton_all.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.radioButton_all.setStyleSheet("font: 9pt \"Calibri\";\n"
-"border-radius: 5px;\n"
-"background-color: rgb(152, 151, 247);\n"
-"color:white")
+                                           "border-radius: 5px;\n"
+                                           "background-color: rgb(152, 151, 247);\n"
+                                           "color:white")
         self.radioButton_all.setShortcut("")
         self.radioButton_all.setObjectName("radioButton_all")
         self.radioButton_accepted = QtWidgets.QRadioButton(self.tab)
         self.radioButton_accepted.setGeometry(QtCore.QRect(720, 16, 82, 31))
         self.radioButton_accepted.setStyleSheet("font: 9pt \"Calibri\";\n"
-"border-radius: 4px;\n"
-"background-color:rgb(152, 151, 247);\n"
-"color:white")
+                                                "border-radius: 4px;\n"
+                                                "background-color:rgb(152, 151, 247);\n"
+                                                "color:white")
         self.radioButton_accepted.setObjectName("radioButton_accepted")
         self.radioButton_closed = QtWidgets.QRadioButton(self.tab)
         self.radioButton_closed.setGeometry(QtCore.QRect(810, 16, 82, 31))
         self.radioButton_closed.setStyleSheet("font: 9pt \"Calibri\";\n"
-"border-radius: 4px;\n"
-"background-color: rgb(152, 151, 247);\n"
-"color:white")
+                                              "border-radius: 4px;\n"
+                                              "background-color: rgb(152, 151, 247);\n"
+                                              "color:white")
         self.radioButton_closed.setObjectName("radioButton_closed")
         self.toolButton_closeorder = QtWidgets.QToolButton(self.tab)
         self.toolButton_closeorder.setGeometry(QtCore.QRect(180, 10, 101, 41))
@@ -365,40 +368,41 @@ class Ui_MainWindow(object):
         self.toolButton_closeorder.setFont(font)
         self.toolButton_closeorder.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.OpenHandCursor))
         self.toolButton_closeorder.setStyleSheet("QToolButton { /* all types of tool button */\n"
-"    font: 8pt \"MS Shell Dlg 2\";\n"
-"    border: 2px solid #32CD32;\n"
-"    border-radius: 6px;\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
-"}\n"
-"\n"
-"QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
-"    padding-right: 20px; /* make way for the popup button */\n"
-"}\n"
-"\n"
-"QToolButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
-"QToolButton::menu-button {\n"
-"    border: 2px solid gray;\n"
-"    border-top-right-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"    /* 16px width + 4px for border = 20px allocated above */\n"
-"    width: 16px;\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow {\n"
-"    image: url(downarrow.png);\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow:open {\n"
-"    top: 1px; left: 1px; /* shift it a bit */\n"
-"}")
+                                                 "    font: 8pt \"MS Shell Dlg 2\";\n"
+                                                 "    border: 2px solid #32CD32;\n"
+                                                 "    border-radius: 6px;\n"
+                                                 "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                                 "                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
+                                                 "}\n"
+                                                 "\n"
+                                                 "QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
+                                                 "    padding-right: 20px; /* make way for the popup button */\n"
+                                                 "}\n"
+                                                 "\n"
+                                                 "QToolButton:pressed {\n"
+                                                 "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                                 "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                                 "}\n"
+                                                 "\n"
+                                                 "/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
+                                                 "QToolButton::menu-button {\n"
+                                                 "    border: 2px solid gray;\n"
+                                                 "    border-top-right-radius: 6px;\n"
+                                                 "    border-bottom-right-radius: 6px;\n"
+                                                 "    /* 16px width + 4px for border = 20px allocated above */\n"
+                                                 "    width: 16px;\n"
+                                                 "}\n"
+                                                 "\n"
+                                                 "QToolButton::menu-arrow {\n"
+                                                 "    image: url(downarrow.png);\n"
+                                                 "}\n"
+                                                 "\n"
+                                                 "QToolButton::menu-arrow:open {\n"
+                                                 "    top: 1px; left: 1px; /* shift it a bit */\n"
+                                                 "}")
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/images/image/icons8-close order.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/images/image/icons8-close order.png"), QtGui.QIcon.Mode.Normal,
+                        QtGui.QIcon.State.Off)
         self.toolButton_closeorder.setIcon(icon3)
         self.toolButton_closeorder.setIconSize(QtCore.QSize(45, 45))
         self.toolButton_closeorder.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
@@ -416,37 +420,37 @@ class Ui_MainWindow(object):
         self.toolButton_Attachments.setGeometry(QtCore.QRect(710, 490, 81, 81))
         self.toolButton_Attachments.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.OpenHandCursor))
         self.toolButton_Attachments.setStyleSheet("QToolButton { /* all types of tool button */\n"
-"    border: 2px solid #b0e0e6;\n"
-"    border-radius: 6px;\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
-"}\n"
-"\n"
-"QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
-"    padding-right: 20px; /* make way for the popup button */\n"
-"}\n"
-"\n"
-"QToolButton:pressed {\n"
-"    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-"                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-"}\n"
-"\n"
-"/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
-"QToolButton::menu-button {\n"
-"    border: 2px solid gray;\n"
-"    border-top-right-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"    /* 16px width + 4px for border = 20px allocated above */\n"
-"    width: 16px;\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow {\n"
-"    image: url(downarrow.png);\n"
-"}\n"
-"\n"
-"QToolButton::menu-arrow:open {\n"
-"    top: 1px; left: 1px; /* shift it a bit */\n"
-"}")
+                                                  "    border: 2px solid #b0e0e6;\n"
+                                                  "    border-radius: 6px;\n"
+                                                  "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                                  "                                      stop: 0 #f6f7fa, stop: 1 #dadbde);\n"
+                                                  "}\n"
+                                                  "\n"
+                                                  "QToolButton[popupMode=\"1\"] { /* only for MenuButtonPopup */\n"
+                                                  "    padding-right: 20px; /* make way for the popup button */\n"
+                                                  "}\n"
+                                                  "\n"
+                                                  "QToolButton:pressed {\n"
+                                                  "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                                  "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                                  "}\n"
+                                                  "\n"
+                                                  "/* the subcontrols below are used only in the MenuButtonPopup mode */\n"
+                                                  "QToolButton::menu-button {\n"
+                                                  "    border: 2px solid gray;\n"
+                                                  "    border-top-right-radius: 6px;\n"
+                                                  "    border-bottom-right-radius: 6px;\n"
+                                                  "    /* 16px width + 4px for border = 20px allocated above */\n"
+                                                  "    width: 16px;\n"
+                                                  "}\n"
+                                                  "\n"
+                                                  "QToolButton::menu-arrow {\n"
+                                                  "    image: url(downarrow.png);\n"
+                                                  "}\n"
+                                                  "\n"
+                                                  "QToolButton::menu-arrow:open {\n"
+                                                  "    top: 1px; left: 1px; /* shift it a bit */\n"
+                                                  "}")
         icon4 = QtGui.QIcon()
         icon4.addPixmap(QtGui.QPixmap(":/images/image/folder.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.toolButton_Attachments.setIcon(icon4)
@@ -459,7 +463,7 @@ class Ui_MainWindow(object):
         self.tableWidget_order_tblwork = QtWidgets.QTableWidget(self.tab_3)
         self.tableWidget_order_tblwork.setGeometry(QtCore.QRect(10, 60, 821, 811))
         self.tableWidget_order_tblwork.setStyleSheet("font: 25 10pt \"Calibri\";\n"
-"selection-background-color: #b0e0e6")
+                                                     "selection-background-color: #b0e0e6")
         self.tableWidget_order_tblwork.setFrameShape(QtWidgets.QFrame.Shape.Panel)
         self.tableWidget_order_tblwork.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.tableWidget_order_tblwork.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -486,7 +490,7 @@ class Ui_MainWindow(object):
         self.tableWidget_order_tbldone = QtWidgets.QTableWidget(self.tab_3)
         self.tableWidget_order_tbldone.setGeometry(QtCore.QRect(850, 60, 821, 811))
         self.tableWidget_order_tbldone.setStyleSheet("font: 25 10pt \"Calibri\";\n"
-"selection-background-color: #b0e0e6")
+                                                     "selection-background-color: #b0e0e6")
         self.tableWidget_order_tbldone.setFrameShape(QtWidgets.QFrame.Shape.Panel)
         self.tableWidget_order_tbldone.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.tableWidget_order_tbldone.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -512,43 +516,43 @@ class Ui_MainWindow(object):
         self.label_inwork.setGeometry(QtCore.QRect(360, 10, 111, 31))
         self.label_inwork.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.label_inwork.setStyleSheet("background-color:  #b0e0e6;\n"
-"color: rgb(255, 255, 255);\n"
-"\n"
-"")
+                                        "color: rgb(255, 255, 255);\n"
+                                        "\n"
+                                        "")
         self.label_inwork.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_inwork.setObjectName("label_inwork")
         self.label_done = QtWidgets.QLabel(self.tab_3)
         self.label_done.setGeometry(QtCore.QRect(1190, 10, 111, 31))
         self.label_done.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
         self.label_done.setStyleSheet("background-color:  #b0e0e6;\n"
-"color: rgb(255, 255, 255);\n"
-"\n"
-"")
+                                      "color: rgb(255, 255, 255);\n"
+                                      "\n"
+                                      "")
         self.label_done.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_done.setObjectName("label_done")
         self.label_orderinwork = QtWidgets.QLabel(self.tab_3)
         self.label_orderinwork.setGeometry(QtCore.QRect(1680, 30, 151, 41))
         self.label_orderinwork.setStyleSheet("border-radius: 4px;\n"
-"background-color: rgb(152, 151, 247);")
+                                             "background-color: rgb(152, 151, 247);")
         self.label_orderinwork.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_orderinwork.setObjectName("label_orderinwork")
         self.label_orderinworkcount = QtWidgets.QLabel(self.tab_3)
         self.label_orderinworkcount.setGeometry(QtCore.QRect(1840, 30, 61, 41))
         self.label_orderinworkcount.setStyleSheet("border-radius: 4px;\n"
-"background-color: rgb(152, 151, 247);")
+                                                  "background-color: rgb(152, 151, 247);")
         self.label_orderinworkcount.setText("")
         self.label_orderinworkcount.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_orderinworkcount.setObjectName("label_orderinworkcount")
         self.label_orderdone = QtWidgets.QLabel(self.tab_3)
         self.label_orderdone.setGeometry(QtCore.QRect(1680, 80, 151, 41))
         self.label_orderdone.setStyleSheet("border-radius: 4px;\n"
-"background-color: rgb(152, 151, 247);")
+                                           "background-color: rgb(152, 151, 247);")
         self.label_orderdone.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_orderdone.setObjectName("label_orderdone")
         self.label_orderindonecount = QtWidgets.QLabel(self.tab_3)
         self.label_orderindonecount.setGeometry(QtCore.QRect(1840, 80, 61, 41))
         self.label_orderindonecount.setStyleSheet("border-radius: 4px;\n"
-"background-color: rgb(152, 151, 247);")
+                                                  "background-color: rgb(152, 151, 247);")
         self.label_orderindonecount.setText("")
         self.label_orderindonecount.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_orderindonecount.setObjectName("label_orderindonecount")
@@ -579,9 +583,8 @@ class Ui_MainWindow(object):
 
         self.label_copy.setVisible(False)
         self.label.setVisible(False)
+
         self.tableWidget_table.resizeColumnToContents(0)
-
-
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -605,11 +608,12 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Дата создания"))
         item = self.tableWidget_table.horizontalHeaderItem(6)
         item.setText(_translate("MainWindow", "Вложение"))
-        self.textBrowser_email_1.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Calibri\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.textBrowser_email_1.setHtml(_translate("MainWindow",
+                                                    "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                    "p, li { white-space: pre-wrap; }\n"
+                                                    "</style></head><body style=\" font-family:\'Calibri\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+                                                    "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Вложение"))
         item = self.tableWidget.horizontalHeaderItem(1)
@@ -623,11 +627,12 @@ class Ui_MainWindow(object):
         self.radioButton_closed.setText(_translate("MainWindow", "Закрытые"))
         self.toolButton_closeorder.setText(_translate("MainWindow", "Закрыть"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Table"))
-        self.textBrowser_email_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Calibri\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.textBrowser_email_2.setHtml(_translate("MainWindow",
+                                                    "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                    "p, li { white-space: pre-wrap; }\n"
+                                                    "</style></head><body style=\" font-family:\'Calibri\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+                                                    "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.toolButton_Attachments.setText(_translate("MainWindow", "Вложение"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Email"))
         self.tableWidget_order_tblwork.setSortingEnabled(True)
@@ -660,4 +665,3 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.action_Settings.setText(_translate("MainWindow", "Settings"))
         self.action_newspecialict.setText(_translate("MainWindow", "Завести нового специалиста"))
-

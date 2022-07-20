@@ -185,6 +185,8 @@ class System(QMainWindow, Ui_MainWindow):
                 for column_number, data in enumerate(row_data):
                     self.tableWidget_table.setItem(row_number, column_number, QTableWidgetItem(str(data)))
             self.SetBackgroundIDColor()
+            self.SetAttachIcon()
+            self.SetReplyIcon()
         except mc.Error as e:
             print(e)
 
@@ -404,7 +406,7 @@ class System(QMainWindow, Ui_MainWindow):
                 sql_select = cursor.execute(f"""SELECT datetime_send FROM email WHERE id = '{id}'""")
                 datetime_send = cursor.fetchall()
                 """Контрольный срок"""
-                ks = datetime_send[0][0] + timedelta(days=1)
+                ks = datetime_send[0][0] + timedelta(days=10)
                 date = ks.strftime('%Y-%m-%d %H:%M:%S')
                 """-----------------"""
 
@@ -476,6 +478,8 @@ class System(QMainWindow, Ui_MainWindow):
                 for column_number, data in enumerate(row_data):
                     self.tableWidget_table.setItem(row_number, column_number, QTableWidgetItem(str(data)))
             self.SetBackgroundKSColor()
+            self.SetAttachIcon()
+            self.SetReplyIcon()
         except mc.Error as e:
             pass
         except Exception as erorr:
@@ -559,6 +563,9 @@ class System(QMainWindow, Ui_MainWindow):
 
                 for column_number, data in enumerate(row_data):
                     self.tableWidget_table.setItem(row_number, column_number, QTableWidgetItem(str(data)))
+
+            self.SetAttachIcon()
+            self.SetReplyIcon()
         except mc.Error as e:
             pass
         except Exception as erorr:
@@ -609,3 +616,50 @@ class System(QMainWindow, Ui_MainWindow):
                     self.tableWidget_table.item(row, 4).setBackground(QtGui.QColor(252, 204, 208))
         except Exception as erorr:
             print(erorr)
+
+    def SetAttachIcon(self):
+        """Иконка вложений в таблице"""
+        try:
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+
+            mycursor = mydb.cursor()
+
+            rows = self.tableWidget_table.rowCount()
+            for row in range(rows):
+                item_id = self.tableWidget_table.item(row, 0).text()
+                sql_select_query = mycursor.execute(
+                    f"""SELECT yes_no_attach FROM email WHERE id = {item_id}""")
+                result = mycursor.fetchall()
+                if result[0][0]:
+                    icon = QtGui.QIcon()
+                    icon.addPixmap(QtGui.QPixmap(":/images/image/folder.png"), QtGui.QIcon.Mode.Normal,
+                                   QtGui.QIcon.State.Off)
+                    self.tableWidget_table.item(row, 6).setIcon(icon)
+        except:
+            pass
+
+    def SetReplyIcon(self):
+        """Иконка ответа в таблице"""
+        try:
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+
+            mycursor = mydb.cursor()
+
+            rows = self.tableWidget_table.rowCount()
+            for row in range(rows):
+                item_id = self.tableWidget_table.item(row, 0).text()
+                sql_select_query = mycursor.execute(
+                    f"""SELECT reply_email FROM email WHERE id = {item_id}""")
+                result = mycursor.fetchall()
+                if result[0][0]:
+                    icon = QtGui.QIcon()
+                    icon.addPixmap(QtGui.QPixmap(":/images/image/open-email.png"), QtGui.QIcon.Mode.Normal,
+                                   QtGui.QIcon.State.Off)
+                    self.tableWidget_table.item(row, 0).setIcon(icon)
+        except:
+            pass
+
+
+
