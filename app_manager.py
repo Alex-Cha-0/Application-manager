@@ -92,7 +92,7 @@ class Ui_MainWindow(object):
         self.tableWidget_table.horizontalHeader().setCascadingSectionResizes(False)
         self.tableWidget_table.horizontalHeader().setDefaultSectionSize(150)
         self.tableWidget_table.horizontalHeader().setHighlightSections(True)
-        self.tableWidget_table.horizontalHeader().setMinimumSectionSize(40)
+        self.tableWidget_table.horizontalHeader().setMinimumSectionSize(55)
         self.tableWidget_table.horizontalHeader().setSortIndicatorShown(False)
         self.tableWidget_table.horizontalHeader().setStretchLastSection(False)
         self.tableWidget_table.verticalHeader().setCascadingSectionResizes(True)
@@ -657,4 +657,8 @@ class Ui_MainWindow(object):
 
         self.label_copy.setVisible(False)
         self.label.setVisible(False)
-        self.tableWidget_table.resizeColumnToContents(0)
+        #self.tableWidget_table.resizeColumnToContents(0)
+        self.tableWidget_table.setColumnWidth(0, 60)
+
+
+
