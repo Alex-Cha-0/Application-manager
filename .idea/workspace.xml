@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="дополнение">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/app_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Library.py" beforeDir="false" afterPath="$PROJECT_DIR$/Library.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reply_email.py" beforeDir="false" afterPath="$PROJECT_DIR$/reply_email.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,12 +38,12 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "last_opened_file_path": "D:/pythonProject/Passgen",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;last_opened_file_path&quot;: &quot;D:/pythonProject/Passgen&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.main">
     <configuration name="Library" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Application manager" />
@@ -265,7 +266,14 @@
       <option name="project" value="LOCAL" />
       <updated>1658317593664</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="дополнение">
+      <created>1658322664825</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1658322664825</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

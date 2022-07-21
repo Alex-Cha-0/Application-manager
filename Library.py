@@ -47,7 +47,7 @@ class System(QMainWindow, Ui_MainWindow):
         self.tableWidget_table.cellClicked.connect(self.cellDoubleClicked)
         # Действия в таблице вложений
         self.tableWidget.cellClicked.connect(self.tableWidget_cellDoubleClicked)
-        # Открыть диалог ответа на письмо
+        # Кнопка ответа на письмо
         self.toolButton_reply.clicked.connect(self.toolButton_replyclicked)
         # Кнопка закрытия заявки
         self.toolButton_closeorder.clicked.connect(self.toolButton_closeorderclicked)
@@ -65,11 +65,11 @@ class System(QMainWindow, Ui_MainWindow):
     """ФУНКЦИИ СЛОТЫ"""
 
     def toolButton_closeorderclicked(self):
-        # self.open_reply_window()
-        # self.SelectFromEmailForAnswerDialog()
-        # self.ui.textEdit_perlyemail.setText('Ваша заявка выполнена!')
-        self.UpdateEmailCloseOrder()
-        self.SelectFromEmailAcceptedOrder()
+        self.open_reply_window()
+        self.SelectFromEmailForReplyClose()
+
+        # self.UpdateEmailCloseOrder()
+        # self.SelectFromEmailAcceptedOrder()
 
     def toolButton_replyclicked(self):
         self.open_reply_window()
@@ -496,7 +496,7 @@ class System(QMainWindow, Ui_MainWindow):
                     date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
                     close_order = True
                     open_order = False
-                    specialist = self.GetNameSpecialist()
+                    # specialist = self.GetNameSpecialist()
                     conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                     database=DATABASEMSSQL)
                     cursor = conn_database.cursor()
@@ -661,5 +661,33 @@ class System(QMainWindow, Ui_MainWindow):
         except:
             pass
 
+    def SelectFromEmailForReplyClose(self):
+        """Открытие ответа при нажатии кнопки закрыть"""
+        id = self.CellWasClicked()
+        if id:
+            try:
+                mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                                  database=DATABASEMSSQL)
+                mycursor = mydb.cursor()
+                sql_select_query = mycursor.execute(
+                    f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
+                result = mycursor.fetchall()
+                subject_email = str(result[0][2])
+
+                self.ui.textBrowser_reply.setText(result[0][3])
+                self.ui.lineEdit_send_email.setText(result[0][0])
+                self.ui.lineEdit_copy.setText(result[0][1])
+                self.ui.lineEdit_subject.setText(subject_email)
+                self.ui.label_idcell.setText(id)
+                self.ui.textEdit_from.setText(
+                    f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
+
+                self.ui.textEdit_perlyemail.setText(f'Ваша заявка - "{subject_email}" закрыта.')
+            except mc.Error as error:
+                pass
+            except Exception as e:
+                print(e)
+        else:
+            pass
 
 
