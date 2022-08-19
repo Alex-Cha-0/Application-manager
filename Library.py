@@ -62,13 +62,13 @@ class System(QMainWindow, Ui_MainWindow):
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi((self.window))
         ##################
+
     """ФУНКЦИИ СЛОТЫ"""
 
     def toolButton_closeorderclicked(self):
-        self.open_reply_window()
-        self.SelectFromEmailForReplyClose()
-
-        # self.UpdateEmailCloseOrder()
+        self.UpdateEmailCloseOrder()
+        # self.open_reply_window()
+        # self.SelectFromEmailForReplyClose()
         # self.SelectFromEmailAcceptedOrder()
 
     def toolButton_replyclicked(self):
@@ -396,7 +396,6 @@ class System(QMainWindow, Ui_MainWindow):
         if not self.CheckOrderIsOpen():
             try:
 
-
                 open_order = True
                 specialist = self.GetNameSpecialist()
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
@@ -557,7 +556,6 @@ class System(QMainWindow, Ui_MainWindow):
             item = self.tableWidget_table.horizontalHeaderItem(5)
             item.setText("Дата закрытия")
 
-
             for row_number, row_data in enumerate(result):
                 self.tableWidget_table.insertRow(row_number)
 
@@ -689,5 +687,3 @@ class System(QMainWindow, Ui_MainWindow):
                 print(e)
         else:
             pass
-
-
