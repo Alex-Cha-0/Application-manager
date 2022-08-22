@@ -1,6 +1,7 @@
 """Библиотека методов"""
 
 import os
+import re
 import time
 import pymssql
 from PyQt6 import QtWidgets, QtGui
@@ -659,31 +660,31 @@ class System(QMainWindow, Ui_MainWindow):
         except:
             pass
 
-    def SelectFromEmailForReplyClose(self):
-        """Открытие ответа при нажатии кнопки закрыть"""
-        id = self.CellWasClicked()
-        if id:
-            try:
-                mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-                                  database=DATABASEMSSQL)
-                mycursor = mydb.cursor()
-                sql_select_query = mycursor.execute(
-                    f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
-                result = mycursor.fetchall()
-                subject_email = str(result[0][2])
-
-                self.ui.textBrowser_reply.setText(result[0][3])
-                self.ui.lineEdit_send_email.setText(result[0][0])
-                self.ui.lineEdit_copy.setText(result[0][1])
-                self.ui.lineEdit_subject.setText(subject_email)
-                self.ui.label_idcell.setText(id)
-                self.ui.textEdit_from.setText(
-                    f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
-
-                self.ui.textEdit_perlyemail.setText(f'Ваша заявка - "{subject_email}" закрыта.')
-            except mc.Error as error:
-                pass
-            except Exception as e:
-                print(e)
-        else:
-            pass
+    # def SelectFromEmailForReplyClose(self):
+    #     """Открытие ответа при нажатии кнопки закрыть"""
+    #     id = self.CellWasClicked()
+    #     if id:
+    #         try:
+    #             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+    #                               database=DATABASEMSSQL)
+    #             mycursor = mydb.cursor()
+    #             sql_select_query = mycursor.execute(
+    #                 f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
+    #             result = mycursor.fetchall()
+    #             subject_email = str(result[0][2])
+    #
+    #             self.ui.textBrowser_reply.setText(result[0][3])
+    #             self.ui.lineEdit_send_email.setText(result[0][0])
+    #             self.ui.lineEdit_copy.setText(result[0][1])
+    #             self.ui.lineEdit_subject.setText(subject_email)
+    #             self.ui.label_idcell.setText(id)
+    #             self.ui.textEdit_from.setText(
+    #                 f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
+    #
+    #             self.ui.textEdit_perlyemail.setText(f'Ваша заявка - "{subject_email}" закрыта.')
+    #         except mc.Error as error:
+    #             pass
+    #         except Exception as e:
+    #             print(e)
+    #     else:
+    #         pass
