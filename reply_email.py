@@ -1,8 +1,10 @@
 """Скрипт ответа на email"""
 from datetime import datetime
 
+from exchangelib.properties import ReferenceItemId
 from requests_kerberos import HTTPKerberosAuth
-from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox
+from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox, \
+    ReplyToItem
 import exchangelib.autodiscover
 import urllib3
 import pytz
@@ -185,8 +187,6 @@ class Ui_MainWindow_reply(object):
                 self.account = account
 
             def Send(self):
-                print(recipient)
-                print(copy)
                 try:
                     m = Message(account=account, subject=subject, body=body,
                                 to_recipients=[Mailbox(email_address=' '.join(str(e) for e in recipient))],

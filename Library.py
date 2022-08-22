@@ -374,7 +374,7 @@ class System(QMainWindow, Ui_MainWindow):
                 sql_select_query = mycursor.execute(
                     f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
                 result = mycursor.fetchall()
-                subject_email = 'RE: ' + str(result[0][2])
+                subject_email = 'RE: ' + str(result[0][2] + '  ' + f'Id: ##{id}##')
 
                 self.ui.textBrowser_reply.setText(result[0][3])
                 self.ui.lineEdit_send_email.setText(result[0][0])

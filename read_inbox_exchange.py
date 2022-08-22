@@ -6,6 +6,7 @@
 """
 
 import os
+import re
 from datetime import datetime
 import time
 import pymssql
@@ -14,8 +15,10 @@ from exchangelib import DELEGATE, Account, Credentials, Configuration
 import exchangelib.autodiscover
 from requests_kerberos import HTTPKerberosAuth
 import urllib3
+from win10toast import ToastNotifier
 
-from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, DIRECTORYATTACHMENTS
+from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
+    DATABASEMSSQL, DIRECTORYATTACHMENTS
 
 tz = pytz.timezone('Europe/Moscow')
 
@@ -41,7 +44,7 @@ def connect(server, email, username, password):
         )
 
         # add kerberos as GSSAPI auth_type
-        #exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
+        # exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
 
         # Create Config
         config = Configuration(server=server, credentials=creds)
@@ -140,15 +143,37 @@ class ConnectToExchange(object):
         date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
         date = date_str.replace(':', '')
         for item in self.account.inbox.filter(is_read=False).order_by('-datetime_received'):
-            print(self.StatusConnect())
 
             try:
+                match = re.findall(r'##\w+', item.body)
+                ID = match[0].replace('##', '')
+
+                if ID:
+
+                    conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                                                    database=DATABASEMSSQL)
+                    cursor = conn_database.cursor()
+                    sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.body}', 
+                                            open_order = '{True}', close_order = '{False}' WHERE id = '{ID}' """
+                    result = cursor.execute(sql_insert_blob_query)
+                    conn_database.commit()
+                    cursor.close()
+                    conn_database.close()
+
+
+                    toast = ToastNotifier()
+                    toast.show_toast(f"Заявка", f"Заявка {item.subject} возвращена!")
+
+                    item.delete()
+                    print('Update выполнен')
+
+            except:
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
                 # Sql query
                 sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy, 
-                    datetime_send, yes_no_attach, text_body, recipients) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) """
+                                                            datetime_send, yes_no_attach, text_body, recipients) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) """
 
                 # Convert data into tuple format
                 insert_blob_tuple = (
@@ -156,10 +181,15 @@ class ConnectToExchange(object):
                     item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to)
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
+
+                toast = ToastNotifier()
+                toast.show_toast(f"Новая заявка", f"Заявка {item.subject} назначена")
+
                 print(f'"{item.subject}" :, Успешно занесено в базу')
                 # Insert into Attachments DB
                 item.is_read = True
                 item.save()
+
                 if CheckCreateDir(item.attachments):
                     directory = DirCreated(item.sender.name, date).Dir()
 
@@ -179,14 +209,13 @@ class ConnectToExchange(object):
                 conn_database.commit()
                 item.delete()
                 print('messege delete')
+                cursor.close()
+                conn_database.close()
 
-            except pymssql.Error as error:
-                return error
-            except Exception as s:
-                pass
-
-            cursor.close()
-            conn_database.close()
+            # except pymssql.Error as error:
+            #     return error
+            # except Exception as s:
+            #     pass
 
 
 while True:
@@ -196,7 +225,7 @@ while True:
     except KeyboardInterrupt as s:
         print(s)
     except exchangelib.errors.ErrorFolderNotFound as error:
-       print(error)
+        print(error)
 
     except Exception as e:
         print(e)
