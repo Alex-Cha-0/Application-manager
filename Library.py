@@ -161,7 +161,8 @@ class System(QMainWindow, Ui_MainWindow):
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
-            mycursor.execute("SELECT * FROM email WHERE open_order is null ORDER BY datetime_send DESC")
+            # mycursor.execute("SELECT * FROM email WHERE open_order is null ORDER BY datetime_send DESC")
+            mycursor.execute("SELECT * FROM email ORDER BY datetime_send DESC")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -572,26 +573,26 @@ class System(QMainWindow, Ui_MainWindow):
 
     def SetBackgroundIDColor(self):
         # columns = self.tableWidget_table.columnCount()
-        rows = self.tableWidget_table.rowCount()
-        for row in range(rows):
-            self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(176, 224, 230))
-        # try:
-        #     mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-        #                       database=DATABASEMSSQL)
-        #
-        #     mycursor = mydb.cursor()
-        #
-        #     rows = self.tableWidget_table.rowCount()
-        #     for row in range(rows):
-        #         item_id = self.tableWidget_table.item(row, 0).text()
-        #         sql_select_query = mycursor.execute(
-        #             f"""SELECT open_order, close_order FROM email WHERE id = {item_id}""")
-        #         result = mycursor.fetchall()
-        #
-        #         if result[0][1] == result[0][0]:
-        #             self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(176, 224, 230))
-        # except Exception as erorr:
-        #     print(erorr)
+        # rows = self.tableWidget_table.rowCount()
+        # for row in range(rows):
+        #     self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(176, 224, 230))
+        try:
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+
+            mycursor = mydb.cursor()
+
+            rows = self.tableWidget_table.rowCount()
+            for row in range(rows):
+                item_id = self.tableWidget_table.item(row, 0).text()
+                sql_select_query = mycursor.execute(
+                    f"""SELECT open_order, close_order FROM email WHERE id = {item_id}""")
+                result = mycursor.fetchall()
+
+                if result[0][1] == result[0][0]:
+                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(176, 224, 230))
+        except Exception as erorr:
+            print(erorr)
 
     def SetBackgroundKSColor(self):
         try:
