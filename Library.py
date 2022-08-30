@@ -9,17 +9,18 @@ from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QApplication, QDialog
 from PyQt6.QtCore import QSettings, pyqtSignal
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
-# from requests_kerberos import HTTPKerberosAuth
-# from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox
-# import pytz
-# import exchangelib.autodiscover
-# import urllib3
+from requests_kerberos import HTTPKerberosAuth
+from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox
+import pytz
+import exchangelib.autodiscover
+import urllib3
 import pymssql as mc
 from datetime import datetime, timedelta
 
 from reply_email import Ui_MainWindow_reply
 
-from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP
+from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP, \
+    SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS
 
 
 class System(QMainWindow, Ui_MainWindow):
@@ -52,6 +53,7 @@ class System(QMainWindow, Ui_MainWindow):
         self.toolButton_reply.clicked.connect(self.toolButton_replyclicked)
         # Кнопка закрытия заявки
         self.toolButton_closeorder.clicked.connect(self.toolButton_closeorderclicked)
+        #self.toolButton_closeorder.clicked.connect(self.ReplyEmail)
         # Кнопка показать все заявки
         self.radioButton_all.clicked.connect(self.ImportFromDatabase)
         # Кнопка показать принятые заявки
@@ -63,8 +65,17 @@ class System(QMainWindow, Ui_MainWindow):
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi((self.window))
         ##################
-
     """ФУНКЦИИ СЛОТЫ"""
+
+    def Data_Division(self):
+        name = self.label_specialist.text()
+        mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+        mycursor = mydb.cursor()
+        mycursor.execute(f"SELECT uid,employee,email,user_exchange,password_exchange FROM Staff INNER JOIN Division "
+                         f"ON uid_Division = uid WHERE employee = '{name}'")
+        result = mycursor.fetchall()
+        return result
 
     def toolButton_closeorderclicked(self):
         self.UpdateEmailCloseOrder()
@@ -157,12 +168,14 @@ class System(QMainWindow, Ui_MainWindow):
 
     def ImportFromDatabase(self):
         try:
+            #id_specialist = self.GetUserId()
+            #print(id_specialist)
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
             # mycursor.execute("SELECT * FROM email WHERE open_order is null ORDER BY datetime_send DESC")
-            mycursor.execute("SELECT * FROM email ORDER BY datetime_send DESC")
+            mycursor.execute(f"SELECT * FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -375,7 +388,10 @@ class System(QMainWindow, Ui_MainWindow):
                 sql_select_query = mycursor.execute(
                     f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
                 result = mycursor.fetchall()
-                subject_email = 'RE: ' + str(result[0][2] + '  ' + f'Id: ##{id}##')
+                if result[0][2]:
+                    subject_email = 'RE: ' + str(result[0][2] + '  ' + f'Id: ##{id}##')
+                else:
+                    subject_email = 'RE: ' + '  ' + f'Id: ##{id}##'
 
                 self.ui.textBrowser_reply.setText(result[0][3])
                 self.ui.lineEdit_send_email.setText(result[0][0])
@@ -454,7 +470,8 @@ class System(QMainWindow, Ui_MainWindow):
                               database=DATABASEMSSQL)
             mycursor = mydb.cursor()
             sql_select_query = mycursor.execute(
-                f"""SELECT id, subject, sender_name, specialist, control_period, datetime_send, yes_no_attach FROM email where open_order = 'True' ORDER BY control_period DESC""")
+                f"""SELECT id, subject, sender_name, specialist, control_period, datetime_send, yes_no_attach FROM 
+                email where open_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} ORDER BY control_period DESC""")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -512,6 +529,9 @@ class System(QMainWindow, Ui_MainWindow):
                     conn_database.commit()
                     cursor.close()
                     conn_database.close()
+
+                    self.ReplyEmail()
+
                 except pymssql.Error as error:
                     # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
                     print(error)
@@ -545,7 +565,8 @@ class System(QMainWindow, Ui_MainWindow):
                               database=DATABASEMSSQL)
             mycursor = mydb.cursor()
             sql_select_query = mycursor.execute(
-                f"""SELECT id, subject, sender_name, specialist, control_period, date_complited, yes_no_attach FROM email where close_order = 'True' ORDER BY control_period DESC""")
+                f"""SELECT id, subject, sender_name, specialist, control_period, date_complited, yes_no_attach FROM 
+                email where close_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} ORDER BY control_period DESC""")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -689,3 +710,105 @@ class System(QMainWindow, Ui_MainWindow):
     #             print(e)
     #     else:
     #         pass
+
+    """Быстрый ответ при закрытии заявки"""
+
+    def ReplyEmail(self):
+        def auth_model(**kwargs):
+            # get kerberos ticket
+            return HTTPKerberosAuth()
+
+        urllib3.disable_warnings()
+        tz = pytz.timezone('Europe/Moscow')
+
+        def connect(server, email, username, password):
+            from exchangelib.protocol import BaseProtocol, NoVerifyHTTPAdapter
+            # Care! Ignor Exchange self-signed SSL cert
+            BaseProtocol.HTTP_ADAPTER_CLS = NoVerifyHTTPAdapter
+
+            # fill Credential object with empty fields
+            creds = Credentials(
+                username=username,
+                password=password
+            )
+
+            # add kerberos as GSSAPI auth_type
+            # exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
+
+            # Create Config
+            config = Configuration(server=server, credentials=creds)
+            # return result
+            return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
+        try:
+            id_cell = self.CellWasClicked()
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+
+            mycursor = mydb.cursor()
+            sql_select_query = mycursor.execute(f"""SELECT subject, copy, sender_email, datetime_send, control_period, date_complited, text_body FROM email WHERE id = {id_cell}""")
+            result = mycursor.fetchall()
+            if result[0][0]:
+                subject = result[0][0] + ' ' + f'Id: ##{id_cell}##'
+            else:
+                subject = f'Id: ##{id_cell}##'
+
+            copy = result[0][1]
+            recipient = result[0][2]
+            body = f'Заявка "{id_cell}" закрыта\nНазначена - {result[0][3]}\nКонтрольный срок - {result[0][4]}\nЗакрыта - {result[0][5]}\n-------------\n{result[0][6]}'
+
+            sql_insert_blob_query = f"""UPDATE email SET text_body = '{body}' WHERE id = '{id_cell}' """
+            res = mycursor.execute(sql_insert_blob_query)
+            mydb.commit()
+            mycursor.close()
+            mydb.close()
+
+        except Exception as s:
+            print(s)
+
+
+
+
+        server = SERVEREXCHANGE
+        # email = EMAILADDRESS
+        # username = USEREXECHANGE
+        # password = USEREXECHANGEPASS
+        email = self.Data_Division()[0][2]
+        username = self.Data_Division()[0][3]
+        password = self.Data_Division()[0][4]
+        account = connect(server, email, username, password)
+        # recipient = str(self.lineEdit_send_email.text()).replace(';', '').split()
+        # copy = self.lineEdit_copy.text().replace(';', '').split()
+        # subject = result[0][0]
+        # body = 'Заявка закрыта'
+
+        status = self.label_statusneworder
+
+        class ConnectToExchange(object):
+            """docstring"""
+            #status.setText('ConnectToExchange')
+            #status.setStyleSheet('color:green')
+
+            def __init__(self, server, email, username, account):
+                """Constructor"""
+
+                self.server = server
+                self.email = email
+                self.username = username
+                self.account = account
+
+            def Send(self):
+
+                try:
+                    m = Message(account=account, subject=subject, body=body,
+                                to_recipients=[Mailbox(email_address=recipient)],
+                                cc_recipients=copy)
+                    m.send()
+
+                    #status.setText('Сообщение отправлено!')
+                    #status.setStyleSheet('color:green')
+
+                except Exception as s:
+                    print(s)
+
+        conn = ConnectToExchange(server, email, username, account)
+        conn.Send()

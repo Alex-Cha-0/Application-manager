@@ -23,42 +23,23 @@ from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, 
 tz = pytz.timezone('Europe/Moscow')
 
 
-def auth_model(**kwargs):
-    # get kerberos ticket
-    return HTTPKerberosAuth()
+def Data_Division():
+    mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                           database=DATABASEMSSQL)
+    mycursor = mydb.cursor()
+    mycursor.execute(f"SELECT * from Division")
+    result = mycursor.fetchall()
+    return result
 
 
-urllib3.disable_warnings()
 
 
-def connect(server, email, username, password):
-    try:
-        from exchangelib.protocol import BaseProtocol, NoVerifyHTTPAdapter
-        # Care! Ignor Exchange self-signed SSL cert
-        BaseProtocol.HTTP_ADAPTER_CLS = NoVerifyHTTPAdapter
+#server = SERVEREXCHANGE
+# email = EMAILADDRESS
+# username = USEREXECHANGE
+# password = USEREXECHANGEPASS
 
-        # fill Credential object with empty fields
-        creds = Credentials(
-            username=username,
-            password=password
-        )
-
-        # add kerberos as GSSAPI auth_type
-        # exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
-
-        # Create Config
-        config = Configuration(server=server, credentials=creds)
-        # return result
-        return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
-    except Exception as e:
-        print(e)
-
-
-server = SERVEREXCHANGE
-email = EMAILADDRESS
-username = USEREXECHANGE
-password = USEREXECHANGEPASS
-account = connect(server, email, username, password)
+#account = connect(server, email, username, password)
 
 
 class DirCreated(object):
@@ -111,17 +92,63 @@ def CheckCreateDir(attachments):
 class ConnectToExchange(object):
     """docstring"""
 
-    def __init__(self, server, email, username, account):
+    def __init__(self, server, email, username, password, account, uid_Divisioin):
         """Constructor"""
 
         self.server = server
         self.email = email
         self.username = username
-        self.account = account
+        self.password = password
+        self.account = self.connect()
+        self.uid_Division = uid_Divisioin
+
+    def auth_model(**kwargs):
+        # get kerberos ticket
+        return HTTPKerberosAuth()
+
+    urllib3.disable_warnings()
+
+    def connect(self):
+        try:
+            from exchangelib.protocol import BaseProtocol, NoVerifyHTTPAdapter
+            # Care! Ignor Exchange self-signed SSL cert
+            BaseProtocol.HTTP_ADAPTER_CLS = NoVerifyHTTPAdapter
+
+            # fill Credential object with empty fields
+            creds = Credentials(
+                username=self.username,
+                password=self.password
+            )
+
+            # add kerberos as GSSAPI auth_type
+            # exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
+
+            # Create Config
+            config = Configuration(server=SERVEREXCHANGE, credentials=creds)
+            # return result
+            return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
+        except Exception as e:
+            print(e)
 
     def StatusConnect(self):
         """Подключаемся к Exchange"""
         print('CONNECT TO EXCHANGE -> ESTABLISHED')
+
+    # def UpdateUidDivision(self):
+    #     try:
+    #         conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+    #                                         database=DATABASEMSSQL)
+    #         cursor = conn_database.cursor()
+    #         # Sql query
+    #         sql_insert_blob_query = """INSERT INTO email(uid_Division) VALUES (%s)"""
+    #
+    #         # Convert data into tuple format
+    #         insert_blob_tuple = self.uid_Division
+    #         result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
+    #         conn_database.commit()
+    #     except Exception as e:
+    #         print(e)
+
 
     def LastDate(self):
         try:
@@ -153,7 +180,7 @@ class ConnectToExchange(object):
                     conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                     database=DATABASEMSSQL)
                     cursor = conn_database.cursor()
-                    sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.body}', 
+                    sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.text_body}', 
                                             open_order = '{True}', close_order = '{False}' WHERE id = '{ID}' """
                     result = cursor.execute(sql_insert_blob_query)
                     conn_database.commit()
@@ -168,17 +195,22 @@ class ConnectToExchange(object):
                     print('Update выполнен')
 
             except:
+                # if item.display_to == 'helper':
+                #     uid_Division = 1
+                # else:
+                #     uid_Division = 2
+                uid_Division = self.uid_Division
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
                 # Sql query
                 sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy, 
-                                                            datetime_send, yes_no_attach, text_body, recipients) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) """
+                                                            datetime_send, yes_no_attach, text_body, recipients, uid_Division) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) """
 
                 # Convert data into tuple format
                 insert_blob_tuple = (
                     item.subject, item.sender.name, item.sender.email_address, item.display_cc,
-                    item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to)
+                    item.datetime_sent.astimezone(tz), item.has_attachments, item.text_body, item.display_to, uid_Division)
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 
@@ -220,8 +252,14 @@ class ConnectToExchange(object):
 
 while True:
     try:
-        conn = ConnectToExchange(server, email, username, account).GetItemAccountInbox()
-        time.sleep(30)
+        account = ConnectToExchange.connect
+        for i in Data_Division():
+            uid_Division = i[0]
+            email = i[2]
+            username = i[3]
+            password = i[4]
+            conn = ConnectToExchange(SERVEREXCHANGE, email, username, password, account, uid_Division).GetItemAccountInbox()
+            time.sleep(30)
     except KeyboardInterrupt as s:
         print(s)
     except exchangelib.errors.ErrorFolderNotFound as error:

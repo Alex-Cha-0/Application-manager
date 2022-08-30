@@ -21,11 +21,9 @@ class GetNameFromLdap(object):
 
                 display_name = str(os.getlogin())
                 self.conn.search(AD_SEARCH_TREE, f'(&(objectCategory=Person)(sAMAccountName={display_name}))',
-                                 attributes=['cn'])
-                result = str(self.conn.entries[0])
-                index_cn = result.find('cn:')
-                rez = result[(index_cn + 4):]
-                return str(rez)
+                                 attributes=['CN'])
+                result = str(self.conn.entries[0]['CN'])
+                return result
         except LDAPBindError as s:
             print(f"Введены не верные учетные данные, {s}")
 

@@ -11,9 +11,11 @@ import pytz
 import pymssql
 
 from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
-    DATABASEMSSQL
+    DATABASEMSSQL, SERVERAD, USERAD, PASSWORDAD, CORP
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+
+from ldap import GetNameFromLdap
 
 
 class Ui_MainWindow_reply(object):
@@ -122,6 +124,21 @@ class Ui_MainWindow_reply(object):
         self.label_subject.setText(_translate("MainWindow_reply", "Тема :"))
         self.pushButton_3.setText(_translate("MainWindow_reply", "Вложение"))
 
+    def Data_Division(self):
+        server = SERVERAD
+        user = USERAD
+        password = PASSWORDAD
+        corp = CORP
+        name = GetNameFromLdap(server, user, password, corp).Cnname()
+
+        mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+        mycursor = mydb.cursor()
+        mycursor.execute(f"SELECT uid,employee,email,user_exchange,password_exchange FROM Staff INNER JOIN Division "
+                         f"ON uid_Division = uid WHERE employee = '{name}'")
+        result = mycursor.fetchall()
+        return result
+
     def IdCellInAppManger(self):
         id_c = self.label_idcell.text()
         return int(id_c)
@@ -162,9 +179,12 @@ class Ui_MainWindow_reply(object):
             return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
 
         server = SERVEREXCHANGE
-        email = EMAILADDRESS
-        username = USEREXECHANGE
-        password = USEREXECHANGEPASS
+        # email = EMAILADDRESS
+        # username = USEREXECHANGE
+        # password = USEREXECHANGEPASS
+        email = self.Data_Division()[0][2]
+        username = self.Data_Division()[0][3]
+        password = self.Data_Division()[0][4]
         account = connect(server, email, username, password)
         recipient = str(self.lineEdit_send_email.text()).replace(';', '').split()
         copy = self.lineEdit_copy.text().replace(';', '').split()
