@@ -1,16 +1,13 @@
 """Скрипт ответа на email"""
-from datetime import datetime
 
-from exchangelib.properties import ReferenceItemId
 from requests_kerberos import HTTPKerberosAuth
-from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox, \
-    ReplyToItem
-import exchangelib.autodiscover
+from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox
+
 import urllib3
 import pytz
 import pymssql
 
-from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
+from cfg import SERVEREXCHANGE, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
     DATABASEMSSQL, SERVERAD, USERAD, PASSWORDAD, CORP
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -132,7 +129,7 @@ class Ui_MainWindow_reply(object):
         name = GetNameFromLdap(server, user, password, corp).Cnname()
 
         mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-                          database=DATABASEMSSQL)
+                               database=DATABASEMSSQL)
         mycursor = mydb.cursor()
         mycursor.execute(f"SELECT uid,employee,email,user_exchange,password_exchange FROM Staff INNER JOIN Division "
                          f"ON uid_Division = uid WHERE employee = '{name}'")
@@ -242,78 +239,3 @@ class Ui_MainWindow_reply(object):
         except pymssql.Error as error:
             # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
             print(error)
-
-    ###################################################################################################
-    # def CheckOrderIsOpen(self):
-    #     try:
-    #         id_cell = self.IdCellInAppManger()
-    #         mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                                database=DATABASEMSSQL)
-    #
-    #         mycursor = mydb.cursor()
-    #         sql_select_query = mycursor.execute(f"""SELECT open_order, close_order FROM email WHERE id = {id_cell}""")
-    #         result = mycursor.fetchall()
-    #         if result[0][0] or result[0][1]:
-    #             return True
-    #         else:
-    #             return False
-    #     except pymssql.Error as error:
-    #         print(error)
-    #     except Exception as s:
-    #         print(s)
-    #
-    # def UpdateEmailCloseOrder(self):
-    #     id = self.IdCellInAppManger()
-    #     if self.CheckOrderIsOpen() == self.CheckOrderIsClose():
-    #         self.label_status.setText(f"'Сначала нужно принять заявку'")
-    #         self.label_status.setStyleSheet('color : red')
-    #     else:
-    #         if not self.CheckOrderIsClose():
-    #             try:
-    #                 self.GetTExtFromWindow()
-    #                 self.ReplyEmail()
-    #
-    #                 date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    #                 close_order = True
-    #                 open_order = False
-    #                 # specialist = self.GetNameSpecialist()
-    #                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                                                 database=DATABASEMSSQL)
-    #                 cursor = conn_database.cursor()
-    #                 # Sql query
-    #                 sql_insert_blob_query = f"""UPDATE email SET date_complited = '{date}',open_order = '{open_order}', close_order = '{close_order}'   WHERE id = '{id}' """
-    #                 # Convert data into tuple format
-    #
-    #                 result = cursor.execute(sql_insert_blob_query)
-    #                 self.label_status.setText(f"'Заявка {id} закрыта!'")
-    #                 self.label_status.setStyleSheet('color:green')
-    #
-    #                 conn_database.commit()
-    #                 cursor.close()
-    #                 conn_database.close()
-    #             except pymssql.Error as error:
-    #                 # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
-    #                 print(error)
-    #
-    #         else:
-    #             self.label_status.setText(f"'Заявка уже в закрыта'")
-    #             self.label_status.setStyleSheet('color : red')
-    #
-    # def CheckOrderIsClose(self):
-    #     try:
-    #         id_cell = self.IdCellInAppManger()
-    #         mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                                database=DATABASEMSSQL)
-    #
-    #         mycursor = mydb.cursor()
-    #         sql_select_query = mycursor.execute(f"""SELECT open_order, close_order FROM email WHERE id = {id_cell}""")
-    #         result = mycursor.fetchall()
-    #         if result[0][1]:
-    #             return True
-    #         else:
-    #             return False
-    #
-    #     except pymssql.Error as error:
-    #         print(error)
-    #     except Exception as s:
-    #         print(s)

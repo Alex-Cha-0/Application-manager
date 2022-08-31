@@ -1,18 +1,17 @@
 """Библиотека методов"""
 
 import os
-import re
-import time
+
 import pymssql
 from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QApplication, QDialog, QFileDialog
-from PyQt6.QtCore import QSettings, pyqtSignal
+from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
+from PyQt6.QtCore import QSettings
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
 from requests_kerberos import HTTPKerberosAuth
-from exchangelib import DELEGATE, Account, Credentials, Configuration, FileAttachment, Message, ItemAttachment, Mailbox
+from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox
 import pytz
-import exchangelib.autodiscover
+
 import urllib3
 import pymssql as mc
 from datetime import datetime, timedelta
@@ -20,7 +19,7 @@ from datetime import datetime, timedelta
 from reply_email import Ui_MainWindow_reply
 
 from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP, \
-    SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS
+    SERVEREXCHANGE
 
 
 class System(QMainWindow, Ui_MainWindow):
@@ -53,7 +52,7 @@ class System(QMainWindow, Ui_MainWindow):
         self.toolButton_reply.clicked.connect(self.toolButton_replyclicked)
         # Кнопка закрытия заявки
         self.toolButton_closeorder.clicked.connect(self.toolButton_closeorderclicked)
-        #self.toolButton_closeorder.clicked.connect(self.ReplyEmail)
+        # self.toolButton_closeorder.clicked.connect(self.ReplyEmail)
         # Кнопка показать все заявки
         self.radioButton_all.clicked.connect(self.ImportFromDatabase)
         # Кнопка показать принятые заявки
@@ -65,6 +64,7 @@ class System(QMainWindow, Ui_MainWindow):
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi((self.window))
         ##################
+
     """ФУНКЦИИ СЛОТЫ"""
 
     def Data_Division(self):
@@ -152,30 +152,18 @@ class System(QMainWindow, Ui_MainWindow):
         except Exception as s:
             print(s)
 
-    # def GetFromCellItem(self):
-    #     row = self.tableWidget_table.currentRow()
-    #     subject = self.tableWidget_table.item(row, 1).text()
-    #     Autor = self.tableWidget_table.item(row, 2).text()
-    #     Sender = self.tableWidget_table.item(row, 3).text()
-    #     Copy = self.tableWidget_table.item(row, 4).text()
-    #     Date = self.tableWidget_table.item(row, 5).text()
-
-    #     self.label_sender.setText(f'{Autor}')
-    #     self.label_time_send.setText(f'{Date}')
-    #     self.label_subject.setText(subject)
-
     """--------------------------------"""
 
     def ImportFromDatabase(self):
         try:
-            #id_specialist = self.GetUserId()
-            #print(id_specialist)
+            # id_specialist = self.GetUserId()
+            # print(id_specialist)
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
-            # mycursor.execute("SELECT * FROM email WHERE open_order is null ORDER BY datetime_send DESC")
-            mycursor.execute(f"SELECT * FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
+            mycursor.execute(
+                f"SELECT * FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -739,13 +727,15 @@ class System(QMainWindow, Ui_MainWindow):
             config = Configuration(server=server, credentials=creds)
             # return result
             return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
+
         try:
             id_cell = self.CellWasClicked()
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
-            sql_select_query = mycursor.execute(f"""SELECT subject, copy, sender_email, datetime_send, control_period, date_complited, text_body FROM email WHERE id = {id_cell}""")
+            sql_select_query = mycursor.execute(
+                f"""SELECT subject, copy, sender_email, datetime_send, control_period, date_complited, text_body FROM email WHERE id = {id_cell}""")
             result = mycursor.fetchall()
             if result[0][0]:
                 subject = result[0][0] + ' ' + f'Id: ##{id_cell}##'
@@ -765,28 +755,20 @@ class System(QMainWindow, Ui_MainWindow):
         except Exception as s:
             print(s)
 
-
-
-
         server = SERVEREXCHANGE
-        # email = EMAILADDRESS
-        # username = USEREXECHANGE
-        # password = USEREXECHANGEPASS
+
         email = self.Data_Division()[0][2]
         username = self.Data_Division()[0][3]
         password = self.Data_Division()[0][4]
         account = connect(server, email, username, password)
-        # recipient = str(self.lineEdit_send_email.text()).replace(';', '').split()
-        # copy = self.lineEdit_copy.text().replace(';', '').split()
-        # subject = result[0][0]
-        # body = 'Заявка закрыта'
 
         status = self.label_statusneworder
 
         class ConnectToExchange(object):
             """docstring"""
-            #status.setText('ConnectToExchange')
-            #status.setStyleSheet('color:green')
+
+            # status.setText('ConnectToExchange')
+            # status.setStyleSheet('color:green')
 
             def __init__(self, server, email, username, account):
                 """Constructor"""
@@ -804,8 +786,8 @@ class System(QMainWindow, Ui_MainWindow):
                                 cc_recipients=copy)
                     m.send()
 
-                    #status.setText('Сообщение отправлено!')
-                    #status.setStyleSheet('color:green')
+                    # status.setText('Сообщение отправлено!')
+                    # status.setStyleSheet('color:green')
 
                 except Exception as s:
                     print(s)

@@ -17,7 +17,7 @@ from requests_kerberos import HTTPKerberosAuth
 import urllib3
 from win10toast import ToastNotifier
 
-from cfg import SERVEREXCHANGE, EMAILADDRESS, USEREXECHANGE, USEREXECHANGEPASS, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
+from cfg import SERVEREXCHANGE, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
     DATABASEMSSQL, DIRECTORYATTACHMENTS
 
 tz = pytz.timezone('Europe/Moscow')
@@ -32,14 +32,12 @@ def Data_Division():
     return result
 
 
-
-
-#server = SERVEREXCHANGE
+# server = SERVEREXCHANGE
 # email = EMAILADDRESS
 # username = USEREXECHANGE
 # password = USEREXECHANGEPASS
 
-#account = connect(server, email, username, password)
+# account = connect(server, email, username, password)
 
 
 class DirCreated(object):
@@ -134,22 +132,6 @@ class ConnectToExchange(object):
         """Подключаемся к Exchange"""
         print('CONNECT TO EXCHANGE -> ESTABLISHED')
 
-    # def UpdateUidDivision(self):
-    #     try:
-    #         conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                                         database=DATABASEMSSQL)
-    #         cursor = conn_database.cursor()
-    #         # Sql query
-    #         sql_insert_blob_query = """INSERT INTO email(uid_Division) VALUES (%s)"""
-    #
-    #         # Convert data into tuple format
-    #         insert_blob_tuple = self.uid_Division
-    #         result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
-    #         conn_database.commit()
-    #     except Exception as e:
-    #         print(e)
-
-
     def LastDate(self):
         try:
             conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
@@ -176,7 +158,6 @@ class ConnectToExchange(object):
                 ID = match[0].replace('##', '')
 
                 if ID:
-
                     conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                     database=DATABASEMSSQL)
                     cursor = conn_database.cursor()
@@ -187,7 +168,6 @@ class ConnectToExchange(object):
                     cursor.close()
                     conn_database.close()
 
-
                     toast = ToastNotifier()
                     toast.show_toast(f"Заявка", f"Заявка {item.subject} возвращена!")
 
@@ -195,10 +175,6 @@ class ConnectToExchange(object):
                     print('Update выполнен')
 
             except:
-                # if item.display_to == 'helper':
-                #     uid_Division = 1
-                # else:
-                #     uid_Division = 2
                 uid_Division = self.uid_Division
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
@@ -210,7 +186,8 @@ class ConnectToExchange(object):
                 # Convert data into tuple format
                 insert_blob_tuple = (
                     item.subject, item.sender.name, item.sender.email_address, item.display_cc,
-                    item.datetime_sent.astimezone(tz), item.has_attachments, item.text_body, item.display_to, uid_Division)
+                    item.datetime_sent.astimezone(tz), item.has_attachments, item.text_body, item.display_to,
+                    uid_Division)
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 
@@ -258,7 +235,8 @@ while True:
             email = i[2]
             username = i[3]
             password = i[4]
-            conn = ConnectToExchange(SERVEREXCHANGE, email, username, password, account, uid_Division).GetItemAccountInbox()
+            conn = ConnectToExchange(SERVEREXCHANGE, email, username, password, account,
+                                     uid_Division).GetItemAccountInbox()
             time.sleep(30)
     except KeyboardInterrupt as s:
         print(s)
