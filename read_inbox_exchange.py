@@ -15,8 +15,6 @@ from exchangelib import DELEGATE, Account, Credentials, Configuration
 import exchangelib.autodiscover
 from requests_kerberos import HTTPKerberosAuth
 import urllib3
-from win10toast import ToastNotifier
-
 from cfg import SERVEREXCHANGE, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
     DATABASEMSSQL, DIRECTORYATTACHMENTS
 
@@ -168,8 +166,7 @@ class ConnectToExchange(object):
                     cursor.close()
                     conn_database.close()
 
-                    toast = ToastNotifier()
-                    toast.show_toast(f"Заявка", f"Заявка {item.subject} возвращена!")
+
 
                     item.delete()
                     print('Update выполнен')
@@ -191,8 +188,7 @@ class ConnectToExchange(object):
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 
-                toast = ToastNotifier()
-                toast.show_toast(f"Новая заявка", f"Заявка {item.subject} назначена")
+
 
                 print(f'"{item.subject}" :, Успешно занесено в базу')
                 # Insert into Attachments DB
