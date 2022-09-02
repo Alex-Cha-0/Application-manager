@@ -35,6 +35,7 @@ class System(QMainWindow, Ui_MainWindow):
             pass
         self.setupUi(self)
         self.show()
+
         """REFRESH"""
         self.toolButton_refresh.clicked.connect(self.ImportFromDatabase)
         """ACCEPT BUTTON"""
@@ -62,10 +63,41 @@ class System(QMainWindow, Ui_MainWindow):
 
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
-        self.ui.setupUi((self.window))
+        self.ui.setupUi(self.window)
         ##################
+        self.comboBox.activated.connect(self.CurrentTextCombobox)
+        self.comboBox.activated.connect(self.SelectFromEmailAcceptedOrder)
+        self.comboBox.activated.connect(self.CountVrabote)
 
     """ФУНКЦИИ СЛОТЫ"""
+
+    def ComboBox(self):
+        self.comboBox.addItem('Все')
+
+        mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+        mycursor = mydb.cursor()
+        mycursor.execute(f'''SELECT employee from Staff where uid_Division = {self.Data_Division()[0][0]}''')
+        result = mycursor.fetchall()
+        for spec in result:
+            self.comboBox.addItem(f'{spec[0]}')
+
+    def CurrentTextCombobox(self):
+        current_text = self.comboBox.currentText()
+        return current_text
+
+    def CountVrabote(self):
+        mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+        mycursor = mydb.cursor()
+        spec = self.CurrentTextCombobox()
+        if spec == 'Все':
+            param = ''
+        else:
+            param = 'AND specialist =' + "'" + spec + "'"
+        mycursor.execute(f'''SELECT COUNT(open_order) FROM email WHERE open_order = 1 {param}''')
+        result = mycursor.fetchall()
+        self.label_count_v_rabote.setText(str(result[0][0]))
 
     def Data_Division(self):
         name = self.label_specialist.text()
@@ -79,9 +111,7 @@ class System(QMainWindow, Ui_MainWindow):
 
     def toolButton_closeorderclicked(self):
         self.UpdateEmailCloseOrder()
-        # self.open_reply_window()
-        # self.SelectFromEmailForReplyClose()
-        # self.SelectFromEmailAcceptedOrder()
+        self.CountVrabote()
 
     def toolButton_replyclicked(self):
         self.open_reply_window()
@@ -98,6 +128,7 @@ class System(QMainWindow, Ui_MainWindow):
     def AcceptButton(self):
         self.UpdateEmailOpenOrder()
         self.ImportFromDatabase()
+        self.CountVrabote()
 
     """-------------------------------------"""
 
@@ -190,6 +221,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundIDColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
+            self.CountVrabote()
         except mc.Error as e:
             print(e)
 
@@ -457,9 +489,14 @@ class System(QMainWindow, Ui_MainWindow):
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
             mycursor = mydb.cursor()
+            spec = self.CurrentTextCombobox()
+            if spec == 'Все':
+                param = ''
+            else:
+                param = 'AND specialist =' + "'" + spec + "'"
             sql_select_query = mycursor.execute(
                 f"""SELECT id, subject, sender_name, specialist, control_period, datetime_send, yes_no_attach FROM 
-                email where open_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} ORDER BY control_period DESC""")
+                email where open_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} {param} ORDER BY control_period DESC""")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -486,8 +523,9 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundKSColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
+            #self.radioButton_accepted.animateClick()
         except mc.Error as e:
-            pass
+            print(e)
         except Exception as erorr:
             print(erorr)
 

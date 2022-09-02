@@ -9,6 +9,8 @@ app = QApplication(sys.argv)
 
 library = System()
 library.ImportFromDatabase()
+library.ComboBox()
+library.CountVrabote()
 
 
 sys.exit(app.exec())
