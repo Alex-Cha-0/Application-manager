@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="Rename main.py to HelpDesk.py">
+    <list default="true" id="6d389bae-45e9-4971-9877-94114fb70229" name="Changes" comment="дополнение">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HelpDesk.py" beforeDir="false" afterPath="$PROJECT_DIR$/HelpDesk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Library.py" beforeDir="false" afterPath="$PROJECT_DIR$/Library.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_manager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/reply_email.py" beforeDir="false" afterPath="$PROJECT_DIR$/reply_email.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,13 +39,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "last_opened_file_path": "D:/PT_PROGECT",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/PT_PROGECT&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.HelpDesk (1)">
     <configuration name="HelpDesk (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Application manager" />
@@ -155,10 +155,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.HelpDesk (1)" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.Library" />
         <item itemvalue="Python.HelpDesk" />
         <item itemvalue="Python.read_inbox_exchange" />
-        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -339,7 +339,14 @@
       <option name="project" value="LOCAL" />
       <updated>1661947164171</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="дополнение">
+      <created>1662123902804</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1662123902804</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -361,8 +368,8 @@
     <MESSAGE value="giti" />
     <MESSAGE value="добаление описания" />
     <MESSAGE value="добавление иконок" />
-    <MESSAGE value="дополнение" />
     <MESSAGE value="Rename main.py to HelpDesk.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Rename main.py to HelpDesk.py" />
+    <MESSAGE value="дополнение" />
+    <option name="LAST_COMMIT_MESSAGE" value="дополнение" />
   </component>
 </project>

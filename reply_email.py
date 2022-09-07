@@ -106,7 +106,6 @@ class Ui_MainWindow_reply(object):
         self.toolButton_send.clicked.connect(self.ReplyEmail)
         self.toolButton_send.clicked.connect(self.UpdateReplyEmail)
         # self.toolButton_send.clicked.connect(self.UpdateEmailCloseOrder)
-
         self.label_idcell.setVisible(False)
 
         self.retranslateUi(MainWindow_reply)
@@ -120,6 +119,7 @@ class Ui_MainWindow_reply(object):
         self.pushButton_copy.setText(_translate("MainWindow_reply", "Копия"))
         self.label_subject.setText(_translate("MainWindow_reply", "Тема :"))
         self.pushButton_3.setText(_translate("MainWindow_reply", "Вложение"))
+
 
     def Data_Division(self):
         server = SERVERAD

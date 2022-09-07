@@ -8,9 +8,10 @@ from Library import System
 app = QApplication(sys.argv)
 
 library = System()
-library.ImportFromDatabase()
-library.ComboBox()
-library.CountVrabote()
 
+library.ImportFromDatabaseAll()
+library.ComboBoxSpec()
+library.CountVrabote()
+library.loadSetting()
 
 sys.exit(app.exec())

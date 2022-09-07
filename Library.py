@@ -33,11 +33,12 @@ class System(QMainWindow, Ui_MainWindow):
             self.move(self.settings.value('window position'))
         except:
             pass
+
         self.setupUi(self)
         self.show()
 
         """REFRESH"""
-        self.toolButton_refresh.clicked.connect(self.ImportFromDatabase)
+        self.toolButton_refresh.clicked.connect(self.ImportFromDatabaseAll)
         """ACCEPT BUTTON"""
         self.toolButton_accept.clicked.connect(self.AcceptButton)
         """Записать имя специалиста"""
@@ -55,23 +56,66 @@ class System(QMainWindow, Ui_MainWindow):
         self.toolButton_closeorder.clicked.connect(self.toolButton_closeorderclicked)
         # self.toolButton_closeorder.clicked.connect(self.ReplyEmail)
         # Кнопка показать все заявки
-        self.radioButton_all.clicked.connect(self.ImportFromDatabase)
+        self.radioButton_all.clicked.connect(self.ImportFromDatabaseAll)
         # Кнопка показать принятые заявки
         self.radioButton_accepted.clicked.connect(self.SelectFromEmailAcceptedOrder)
         # Кнопка показать закрытые заявки
         self.radioButton_closed.clicked.connect(self.SelectFromEmailClosedOrder)
+        # Массив радиокнопок
+        self.radio_buttons = [self.radioButton_all, self.radioButton_accepted, self.radioButton_closed]
+        self.radio_buttons_functions = [self.ImportFromDatabaseAll, self.SelectFromEmailAcceptedOrder,
+                                        self.SelectFromEmailClosedOrder]
 
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi(self.window)
         ##################
-        self.comboBox.activated.connect(self.CurrentTextCombobox)
-        self.comboBox.activated.connect(self.SelectFromEmailAcceptedOrder)
+        # ComboBox специалист
+        self.comboBox.activated.connect(self.CurrentTextComboboxSpec)
+        # self.comboBox.activated.connect(self.SelectFromEmailAcceptedOrder)
         self.comboBox.activated.connect(self.CountVrabote)
+        # ComboBox показать
+        self.comboBox_2.activated.connect(self.CurrentTextComboboxShow)
+        # Кол-во колонок в таблице
+        self.count_column = self.tableWidget_table.horizontalHeader().count()
 
+    """Сохранение настроек"""
+
+    def closeEvent(self, event):
+        self.settings.setValue('window size', self.size())
+        self.settings.setValue('window position', self.pos())
+        self.saveSetting()
+        event.accept()
+
+    def saveSetting(self):
+        self.settings.setValue('combobox_spec', self.comboBox.currentIndex())
+        self.settings.setValue('combobox_show', self.comboBox_2.currentIndex())
+        for b, button in enumerate(self.radio_buttons):
+            if button.isChecked():
+                self.settings.setValue('radio_button', b)
+
+        for i in range(self.count_column):
+            self.settings.setValue(f'column {i}', self.tableWidget_table.columnWidth(i))
+
+    def loadSetting(self):
+        self.comboBox.setCurrentIndex(self.settings.value('combobox_spec', 0))
+        self.comboBox_2.setCurrentIndex(self.settings.value('combobox_show', 0))
+
+        radio_button = self.settings.value('radio_button', 0)
+        self.radio_buttons[radio_button].toggled.connect(self.radio_buttons_functions[radio_button])
+        self.radio_buttons[radio_button].setChecked(True)
+
+        for i in range(self.count_column):
+            self.tableWidget_table.setColumnWidth(i, self.settings.value(f'column {i}', 100))
+
+    ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
 
-    def ComboBox(self):
+    def CurrentTextComboboxShow(self):
+        current_text = self.comboBox_2.currentText()
+        return current_text
+
+    def ComboBoxSpec(self):
         self.comboBox.addItem('Все')
 
         mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
@@ -82,7 +126,7 @@ class System(QMainWindow, Ui_MainWindow):
         for spec in result:
             self.comboBox.addItem(f'{spec[0]}')
 
-    def CurrentTextCombobox(self):
+    def CurrentTextComboboxSpec(self):
         current_text = self.comboBox.currentText()
         return current_text
 
@@ -90,7 +134,7 @@ class System(QMainWindow, Ui_MainWindow):
         mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                           database=DATABASEMSSQL)
         mycursor = mydb.cursor()
-        spec = self.CurrentTextCombobox()
+        spec = self.CurrentTextComboboxSpec()
         if spec == 'Все':
             param = ''
         else:
@@ -122,12 +166,12 @@ class System(QMainWindow, Ui_MainWindow):
         self.StartOpenAttachment()
 
     def cellDoubleClicked(self):
-        self.SecelctFromDataBase()
+        self.SecelctToTextBrowserEmail()
         self.SelectFromAttachDataToTable()
 
     def AcceptButton(self):
         self.UpdateEmailOpenOrder()
-        self.ImportFromDatabase()
+        self.ImportFromDatabaseAll()
         self.CountVrabote()
 
     """-------------------------------------"""
@@ -136,12 +180,8 @@ class System(QMainWindow, Ui_MainWindow):
     def open_reply_window(self):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
-        self.ui.setupUi((self.window))
+        self.ui.setupUi(self.window)
         self.window.show()
-
-    def closeEvent(self, event):
-        self.settings.setValue('window size', self.size())
-        self.settings.setValue('window position', self.pos())
 
     def GetNameSpecialist(self):
         server = SERVERAD
@@ -185,16 +225,19 @@ class System(QMainWindow, Ui_MainWindow):
 
     """--------------------------------"""
 
-    def ImportFromDatabase(self):
+    def ImportFromDatabaseAll(self):
         try:
-            # id_specialist = self.GetUserId()
-            # print(id_specialist)
+            show = self.CurrentTextComboboxShow()
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
+            if show == 'All':
+                TOP = '*'
+            else:
+                TOP = 'TOP' + ' ' + show + ' ' + 'id, subject, sender_name, sender_email, copy, datetime_send, yes_no_attach'
             mycursor.execute(
-                f"SELECT * FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
+                f"SELECT {TOP} FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -225,7 +268,7 @@ class System(QMainWindow, Ui_MainWindow):
         except mc.Error as e:
             print(e)
 
-    def SecelctFromDataBase(self):
+    def SecelctToTextBrowserEmail(self):
         try:
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
@@ -274,78 +317,6 @@ class System(QMainWindow, Ui_MainWindow):
         else:
             # self.label_erorr3.setText("Ничего не выбрано")
             pass
-
-    # def InsertBlobInOrderInWork(self):
-    #
-    #     if not self.CompareSqlTablesEmailAndTblwork():
-    #         try:
-    #             id, subject, sender = self.JoinFromDataBase()
-    #             date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    #
-    #             specialist = self.GetNameSpecialist()
-    #             conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                                             database=DATABASEMSSQL)
-    #             cursor = conn_database.cursor()
-    #             # Sql query
-    #             sql_insert_blob_query = """INSERT INTO work (id_email_in_work, subject, autor, control_period, specialist) VALUES (%s,%s,%s,%s,%s) """
-    #             # Convert data into tuple format
-    #             insert_blob_tuple = (id, subject, sender, date, specialist)
-    #             result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
-    #             self.label_statusneworder.setText(f"'Заявка '{subject}' принята'")
-    #             self.label_statusneworder.setStyleSheet('color:green')
-    #
-    #             conn_database.commit()
-    #             cursor.close()
-    #             conn_database.close()
-    #         except pymssql.Error as error:
-    #             # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
-    #             pass
-    #
-    #     else:
-    #         self.label_statusneworder.setText(f"'Заявка уже в работе'")
-    #         self.label_statusneworder.setStyleSheet('color : red')
-
-    # def ImportFromTblWork(self):
-    #     try:
-    #         mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                           database=DATABASEMSSQL)
-    #
-    #         mycursor = mydb.cursor()
-    #         mycursor.execute("SELECT * FROM work ORDER BY control_period DESC")
-    #         result = mycursor.fetchall()
-    #
-    #         self.tableWidget_order_tblwork.setRowCount(0)
-    #
-    #         for row_number, row_data in enumerate(result):
-    #             self.tableWidget_order_tblwork.insertRow(row_number)
-    #
-    #             for column_number, data in enumerate(row_data):
-    #                 self.tableWidget_order_tblwork.setItem(row_number, column_number, QTableWidgetItem(str(data)))
-    #     except mc.Error as e:
-    #         # self.label_error.setText("Error ", e)
-    #         pass
-
-    # def CompareSqlTablesEmailAndTblwork(self):
-    #     try:
-    #         id_cell = self.CellWasClicked()
-    #         mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                           database=DATABASEMSSQL)
-    #
-    #         mycursor = mydb.cursor()
-    #         sql_select_query = mycursor.execute(f"""SELECT id FROM email WHERE id = ANY (SELECT
-    #                                         id_email_in_work FROM work WHERE id_email_in_work = '{id_cell}')""")
-    #         result = mycursor.fetchall()
-    #         if result:
-    #             return True
-    #         else:
-    #             return False
-    #
-    #     except pymssql.Error as error:
-    #         # print('Такое значение отсутствует', error)
-    #         pass
-    #     except Exception as s:
-    #         # print('Ошибка: ', s)
-    #         pass
 
     def ShowAttach(self):
         id_email = self.CellWasClicked()
@@ -489,13 +460,18 @@ class System(QMainWindow, Ui_MainWindow):
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
             mycursor = mydb.cursor()
-            spec = self.CurrentTextCombobox()
+            spec = self.CurrentTextComboboxSpec()
+            show = self.CurrentTextComboboxShow()
+            if show == 'All':
+                TOP = ''
+            else:
+                TOP = 'TOP' + ' ' + show
             if spec == 'Все':
                 param = ''
             else:
                 param = 'AND specialist =' + "'" + spec + "'"
             sql_select_query = mycursor.execute(
-                f"""SELECT id, subject, sender_name, specialist, control_period, datetime_send, yes_no_attach FROM 
+                f"""SELECT {TOP} id, subject, sender_name, specialist, control_period, datetime_send, yes_no_attach FROM 
                 email where open_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} {param} ORDER BY control_period DESC""")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
@@ -523,7 +499,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundKSColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
-            #self.radioButton_accepted.animateClick()
+            # self.radioButton_accepted.setChecked(True)
         except mc.Error as e:
             print(e)
         except Exception as erorr:
@@ -590,9 +566,19 @@ class System(QMainWindow, Ui_MainWindow):
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
             mycursor = mydb.cursor()
+            show = self.CurrentTextComboboxShow()
+            spec = self.CurrentTextComboboxSpec()
+            if show == 'All':
+                TOP = ''
+            else:
+                TOP = 'TOP' + ' ' + show
+            if spec == 'Все':
+                param = ''
+            else:
+                param = 'AND specialist =' + "'" + spec + "'"
             sql_select_query = mycursor.execute(
-                f"""SELECT id, subject, sender_name, specialist, control_period, date_complited, yes_no_attach FROM 
-                email where close_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} ORDER BY control_period DESC""")
+                f"""SELECT {TOP} id, subject, sender_name, specialist, control_period, date_complited, yes_no_attach FROM 
+                email where close_order = 'True' AND uid_Division = {self.Data_Division()[0][0]} {param} ORDER BY control_period DESC""")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
