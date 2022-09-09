@@ -2,8 +2,10 @@
 
 import os
 
+import PyQt5
 import pymssql
 from PyQt6 import QtWidgets, QtGui
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
 from PyQt6.QtCore import QSettings
 from app_manager import Ui_MainWindow
@@ -48,6 +50,9 @@ class System(QMainWindow, Ui_MainWindow):
         self.tableWidget_table.cellClicked.connect(self.CellWasClicked)
         # Выполнение select запроса SQL с ID письма
         self.tableWidget_table.cellClicked.connect(self.cellDoubleClicked)
+
+        self.tableWidget_table.doubleClicked.connect(self.DoubleClickedAtAllOrder)
+
         # Действия в таблице вложений
         self.tableWidget.cellClicked.connect(self.tableWidget_cellDoubleClicked)
         # Кнопка ответа на письмо
@@ -110,6 +115,27 @@ class System(QMainWindow, Ui_MainWindow):
 
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
+
+    def DoubleClickedAtAllOrder(self):
+        id = self.CellWasClicked()
+        # self.SelectFromEmailAcceptedOrder()
+        mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+        mycursor = mydb.cursor()
+        mycursor.execute(f'''SELECT open_order, close_order from email where id = {id}''')
+        result = mycursor.fetchall()
+        open_order = result[0][0]
+        close_order = result[0][1]
+        if open_order:
+            self.SelectFromEmailAcceptedOrder()
+            self.radioButton_accepted.click()
+        elif close_order:
+            self.SelectFromEmailClosedOrder()
+            self.radioButton_closed.click()
+        for row in range(self.tableWidget_table.rowCount()):
+            cell_value = self.tableWidget_table.item(row, 0).text()
+            if cell_value == id:
+                self.tableWidget_table.selectRow(row)
 
     def CurrentTextComboboxShow(self):
         current_text = self.comboBox_2.currentText()
@@ -265,6 +291,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
+            self.SetAcceptCollor()
         except mc.Error as e:
             print(e)
 
@@ -614,16 +641,21 @@ class System(QMainWindow, Ui_MainWindow):
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
-
+            columns = self.tableWidget_table.columnCount()
             rows = self.tableWidget_table.rowCount()
             for row in range(rows):
-                item_id = self.tableWidget_table.item(row, 0).text()
-                sql_select_query = mycursor.execute(
-                    f"""SELECT open_order, close_order FROM email WHERE id = {item_id}""")
-                result = mycursor.fetchall()
+                for column in range(columns):
+                    item_id = self.tableWidget_table.item(row, 0).text()
+                    sql_select_query = mycursor.execute(
+                        f"""SELECT open_order, close_order FROM email WHERE id = {item_id}""")
+                    result = mycursor.fetchall()
 
-                if result[0][1] == result[0][0]:
-                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(176, 224, 230))
+                    if result[0][1] == result[0][0]:
+                        self.tableWidget_table.item(row, column).setBackground(QtGui.QColor(176, 224, 230))
+                        font = QFont()
+                        font.setBold(True)
+                        self.tableWidget_table.item(row, column).setFont(font)
+
         except Exception as erorr:
             print(erorr)
 
@@ -694,34 +726,35 @@ class System(QMainWindow, Ui_MainWindow):
         except:
             pass
 
-    # def SelectFromEmailForReplyClose(self):
-    #     """Открытие ответа при нажатии кнопки закрыть"""
-    #     id = self.CellWasClicked()
-    #     if id:
-    #         try:
-    #             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-    #                               database=DATABASEMSSQL)
-    #             mycursor = mydb.cursor()
-    #             sql_select_query = mycursor.execute(
-    #                 f"""SELECT sender_email, copy, subject, text_body, sender_name, datetime_send, recipients  FROM email WHERE id = {id}""")
-    #             result = mycursor.fetchall()
-    #             subject_email = str(result[0][2])
-    #
-    #             self.ui.textBrowser_reply.setText(result[0][3])
-    #             self.ui.lineEdit_send_email.setText(result[0][0])
-    #             self.ui.lineEdit_copy.setText(result[0][1])
-    #             self.ui.lineEdit_subject.setText(subject_email)
-    #             self.ui.label_idcell.setText(id)
-    #             self.ui.textEdit_from.setText(
-    #                 f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
-    #
-    #             self.ui.textEdit_perlyemail.setText(f'Ваша заявка - "{subject_email}" закрыта.')
-    #         except mc.Error as error:
-    #             pass
-    #         except Exception as e:
-    #             print(e)
-    #     else:
-    #         pass
+    def SetAcceptCollor(self):
+        """Подсветка заявок в работе и закрытых во всех заявках"""
+        try:
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+
+            mycursor = mydb.cursor()
+            spec = self.CurrentTextComboboxSpec()
+            rows = self.tableWidget_table.rowCount()
+            for row in range(rows):
+                item_id = self.tableWidget_table.item(row, 0).text()
+                sql_select_query = mycursor.execute(
+                    f"SELECT open_order, close_order, specialist FROM email WHERE id = {item_id}")
+                result = mycursor.fetchall()
+                open_order = result[0][0]
+                close_order = result[0][1]
+                specialist = result[0][2]
+                if open_order == True and spec == 'Все':
+                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
+
+
+                if open_order == True and spec == specialist:
+                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
+                if close_order == True and spec == specialist:
+                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(212, 212, 212))
+
+
+        except Exception as erorr:
+            print(erorr)
 
     """Быстрый ответ при закрытии заявки"""
 
@@ -759,16 +792,18 @@ class System(QMainWindow, Ui_MainWindow):
 
             mycursor = mydb.cursor()
             sql_select_query = mycursor.execute(
-                f"""SELECT subject, copy, sender_email, datetime_send, control_period, date_complited, text_body FROM email WHERE id = {id_cell}""")
+                f"""SELECT subject, copy, sender_email, datetime_send, control_period, date_complited, text_body, specialist FROM email WHERE id = {id_cell}""")
             result = mycursor.fetchall()
             if result[0][0]:
                 subject = result[0][0] + ' ' + f'Id: ##{id_cell}##'
             else:
                 subject = f'Id: ##{id_cell}##'
-
-            copy = result[0][1]
+            if result[0][1]:
+                copy = result[0][1].replace(';', '').split()
+            else:
+                copy = ''
             recipient = result[0][2]
-            body = f'Заявка "{id_cell}" закрыта\nНазначена - {result[0][3]}\nКонтрольный срок - {result[0][4]}\nЗакрыта - {result[0][5]}\n-------------\n{result[0][6]}'
+            body = f'Заявка "{id_cell}" закрыта\nЗаявку выполнял - {result[0][7]}\nНазначена - {result[0][3]}\nКонтрольный срок - {result[0][4]}\nЗакрыта - {result[0][5]}\n-------------\n{result[0][6]}'
 
             sql_insert_blob_query = f"""UPDATE email SET text_body = '{body}' WHERE id = '{id_cell}' """
             res = mycursor.execute(sql_insert_blob_query)
@@ -790,9 +825,6 @@ class System(QMainWindow, Ui_MainWindow):
 
         class ConnectToExchange(object):
             """docstring"""
-
-            # status.setText('ConnectToExchange')
-            # status.setStyleSheet('color:green')
 
             def __init__(self, server, email, username, account):
                 """Constructor"""
