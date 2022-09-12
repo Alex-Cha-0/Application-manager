@@ -5,8 +5,8 @@ import os
 import PyQt5
 import pymssql
 from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
+from PyQt6.QtGui import QFont, QColor, QBrush
+from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup
 from PyQt6.QtCore import QSettings
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
@@ -71,13 +71,20 @@ class System(QMainWindow, Ui_MainWindow):
         self.radio_buttons_functions = [self.ImportFromDatabaseAll, self.SelectFromEmailAcceptedOrder,
                                         self.SelectFromEmailClosedOrder]
 
+        self.radio_group = QButtonGroup()
+        self.radio_group.addButton(self.radioButton_all,1)
+        self.radio_group.addButton(self.radioButton_accepted,2)
+        self.radio_group.addButton(self.radioButton_closed,3)
+        self.radio_group.buttonClicked.connect(self.GetIdRadioButtons)
+
+
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi(self.window)
         ##################
         # ComboBox специалист
         self.comboBox.activated.connect(self.CurrentTextComboboxSpec)
-        # self.comboBox.activated.connect(self.SelectFromEmailAcceptedOrder)
+        self.comboBox.activated.connect(self.ChekBoxEvent)
         self.comboBox.activated.connect(self.CountVrabote)
         # ComboBox показать
         self.comboBox_2.activated.connect(self.CurrentTextComboboxShow)
@@ -115,6 +122,18 @@ class System(QMainWindow, Ui_MainWindow):
 
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
+
+    def GetIdRadioButtons(self):
+        return self.radio_group.checkedId()
+
+    def ChekBoxEvent(self):
+        radio_id = self.GetIdRadioButtons()
+        if radio_id == 1:
+            self.ImportFromDatabaseAll()
+        if radio_id == 2:
+            self.SelectFromEmailAcceptedOrder()
+        if radio_id == 3:
+            self.SelectFromEmailClosedOrder()
 
     def DoubleClickedAtAllOrder(self):
         id = self.CellWasClicked()
@@ -261,7 +280,7 @@ class System(QMainWindow, Ui_MainWindow):
             if show == 'All':
                 TOP = '*'
             else:
-                TOP = 'TOP' + ' ' + show + ' ' + 'id, subject, sender_name, sender_email, copy, datetime_send, yes_no_attach'
+                TOP = 'TOP' + ' ' + show + ' ' + 'id, subject, sender_name, specialist, copy, datetime_send, yes_no_attach'
             mycursor.execute(
                 f"SELECT {TOP} FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
             result = mycursor.fetchall()
@@ -274,7 +293,7 @@ class System(QMainWindow, Ui_MainWindow):
             item = self.tableWidget_table.horizontalHeaderItem(2)
             item.setText("Автор")
             item = self.tableWidget_table.horizontalHeaderItem(3)
-            item.setText('Отправитель')
+            item.setText('Назначен специалист')
             item = self.tableWidget_table.horizontalHeaderItem(4)
             item.setText("Копия")
             item = self.tableWidget_table.horizontalHeaderItem(5)
@@ -291,7 +310,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
-            self.SetAcceptCollor()
+            #self.SetAcceptCollor()
         except mc.Error as e:
             print(e)
 
@@ -303,12 +322,12 @@ class System(QMainWindow, Ui_MainWindow):
             if id:
                 mycursor = mydb.cursor()
                 sql_select_query = mycursor.execute(
-                    f"""SELECT text_body, yes_no_attach, copy, sender_name, datetime_send, subject  FROM email WHERE id = {id}""")
+                    f"""SELECT text_body, yes_no_attach, copy, sender_name, datetime_send, subject, sender_email  FROM email WHERE id = {id}""")
                 result = mycursor.fetchall()
                 self.textBrowser_email_1.setText(f'{result[0][0]}')
                 self.label_attachments.setVisible(result[0][1])
 
-                self.label_sender.setText(f'{result[0][3]}')
+                self.label_sender.setText(f'{result[0][3]} - {result[0][6]}')
                 self.label_time_send.setText(f'{result[0][4]}')
                 self.label_subject.setText(f'{result[0][5]}')
 
@@ -643,18 +662,42 @@ class System(QMainWindow, Ui_MainWindow):
             mycursor = mydb.cursor()
             columns = self.tableWidget_table.columnCount()
             rows = self.tableWidget_table.rowCount()
+            spec = self.CurrentTextComboboxSpec()
+            font = QFont()
             for row in range(rows):
                 for column in range(columns):
                     item_id = self.tableWidget_table.item(row, 0).text()
                     sql_select_query = mycursor.execute(
-                        f"""SELECT open_order, close_order FROM email WHERE id = {item_id}""")
+                        f"""SELECT open_order, close_order, specialist FROM email WHERE id = {item_id}""")
                     result = mycursor.fetchall()
-
-                    if result[0][1] == result[0][0]:
-                        self.tableWidget_table.item(row, column).setBackground(QtGui.QColor(176, 224, 230))
+                    open_order = result[0][0]
+                    close_order = result[0][1]
+                    specialist = result[0][2]
+                    # if specialist != spec:
+                    #     self.tableWidget_table.item(row, column).setBackground(QtGui.QColor(33, 33, 33))
+                    if close_order == open_order:
                         font = QFont()
                         font.setBold(True)
                         self.tableWidget_table.item(row, column).setFont(font)
+                        self.tableWidget_table.item(row, column).setForeground(QBrush(QColor(0, 88, 150)))
+                    if close_order == True and spec == 'Все':
+                        font.setStrikeOut(True)
+                        self.tableWidget_table.item(row, column).setFont(font)
+                    if open_order == True and spec == 'Все':
+                        self.tableWidget_table.item(row, column).setBackground(QtGui.QColor(211, 252, 204))
+
+                    if open_order == True and spec == specialist:
+                        self.tableWidget_table.item(row, column).setBackground(QtGui.QColor(211, 252, 204))
+                        icon = QtGui.QIcon()
+                        icon.addPixmap(QtGui.QPixmap(":/images/image/add_icon.png"), QtGui.QIcon.Mode.Normal,
+                                       QtGui.QIcon.State.Off)
+                        self.tableWidget_table.item(row, 0).setIcon(icon)
+                    if close_order == True and spec == specialist:
+                        font.setStrikeOut(True)
+                        self.tableWidget_table.item(row, column).setFont(font)
+
+
+
 
         except Exception as erorr:
             print(erorr)
@@ -726,35 +769,47 @@ class System(QMainWindow, Ui_MainWindow):
         except:
             pass
 
-    def SetAcceptCollor(self):
-        """Подсветка заявок в работе и закрытых во всех заявках"""
-        try:
-            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-                              database=DATABASEMSSQL)
-
-            mycursor = mydb.cursor()
-            spec = self.CurrentTextComboboxSpec()
-            rows = self.tableWidget_table.rowCount()
-            for row in range(rows):
-                item_id = self.tableWidget_table.item(row, 0).text()
-                sql_select_query = mycursor.execute(
-                    f"SELECT open_order, close_order, specialist FROM email WHERE id = {item_id}")
-                result = mycursor.fetchall()
-                open_order = result[0][0]
-                close_order = result[0][1]
-                specialist = result[0][2]
-                if open_order == True and spec == 'Все':
-                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
-
-
-                if open_order == True and spec == specialist:
-                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
-                if close_order == True and spec == specialist:
-                    self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(212, 212, 212))
-
-
-        except Exception as erorr:
-            print(erorr)
+    # def SetAcceptCollor(self):
+    #     """Подсветка заявок в работе и закрытых во всех заявках"""
+    #     try:
+    #         mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+    #                           database=DATABASEMSSQL)
+    #
+    #         mycursor = mydb.cursor()
+    #         spec = self.CurrentTextComboboxSpec()
+    #         rows = self.tableWidget_table.rowCount()
+    #         for row in range(rows):
+    #             item_id = self.tableWidget_table.item(row, 0).text()
+    #             sql_select_query = mycursor.execute(
+    #                 f"SELECT open_order, close_order, specialist FROM email WHERE id = {item_id}")
+    #             result = mycursor.fetchall()
+    #             open_order = result[0][0]
+    #             close_order = result[0][1]
+    #             specialist = result[0][2]
+    #             if open_order == True and spec == 'Все':
+    #                 self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
+    #
+    #
+    #             if open_order == True and spec == specialist:
+    #                 self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(211, 252, 204))
+    #                 icon = QtGui.QIcon()
+    #                 icon.addPixmap(QtGui.QPixmap(":/images/image/add_icon.png"), QtGui.QIcon.Mode.Normal,
+    #                                QtGui.QIcon.State.Off)
+    #                 self.tableWidget_table.item(row, 0).setIcon(icon)
+    #             if close_order == True and spec == specialist:
+    #                 font = QFont()
+    #                 font.setBold(True)
+    #                 font.setStrikeOut(True)
+    #                 self.tableWidget_table.item(row, 0).setFont(font)
+    #                 #self.tableWidget_table.item(row, 0).setBackground(QtGui.QColor(212, 212, 212))
+    #                 icon = QtGui.QIcon()
+    #                 icon.addPixmap(QtGui.QPixmap(":/images/image/accepted.png"), QtGui.QIcon.Mode.Normal,
+    #                                QtGui.QIcon.State.Off)
+    #                 self.tableWidget_table.item(row, 0).setIcon(icon)
+    #
+    #
+    #     except Exception as erorr:
+    #         print(erorr)
 
     """Быстрый ответ при закрытии заявки"""
 
