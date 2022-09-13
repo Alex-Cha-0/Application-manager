@@ -172,19 +172,21 @@ class ConnectToExchange(object):
                     print('Update выполнен')
 
             except:
+                open_order = False
+                close_order = False
                 uid_Division = self.uid_Division
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
                 # Sql query
                 sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy, 
-                                                            datetime_send, yes_no_attach, text_body, recipients, uid_Division) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) """
+                                                            datetime_send, yes_no_attach, text_body, recipients, uid_Division, open_order, close_order) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
 
                 # Convert data into tuple format
                 insert_blob_tuple = (
                     item.subject, item.sender.name, item.sender.email_address, item.display_cc,
                     item.datetime_sent.astimezone(tz), item.has_attachments, item.text_body, item.display_to,
-                    uid_Division)
+                    uid_Division, open_order, close_order)
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 

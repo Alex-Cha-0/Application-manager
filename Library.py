@@ -70,13 +70,15 @@ class System(QMainWindow, Ui_MainWindow):
         self.radio_buttons = [self.radioButton_all, self.radioButton_accepted, self.radioButton_closed]
         self.radio_buttons_functions = [self.ImportFromDatabaseAll, self.SelectFromEmailAcceptedOrder,
                                         self.SelectFromEmailClosedOrder]
-
+        # Группа радиокнопок
         self.radio_group = QButtonGroup()
         self.radio_group.addButton(self.radioButton_all,1)
         self.radio_group.addButton(self.radioButton_accepted,2)
         self.radio_group.addButton(self.radioButton_closed,3)
         self.radio_group.buttonClicked.connect(self.GetIdRadioButtons)
 
+        # Чекбокс
+        self.checkBox_allnotclose.clicked.connect(self.ChekboxEvent)
 
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
@@ -100,6 +102,7 @@ class System(QMainWindow, Ui_MainWindow):
         event.accept()
 
     def saveSetting(self):
+        self.settings.setValue('checkbox', int(self.ChekboxEvent()))
         self.settings.setValue('combobox_spec', self.comboBox.currentIndex())
         self.settings.setValue('combobox_show', self.comboBox_2.currentIndex())
         for b, button in enumerate(self.radio_buttons):
@@ -110,6 +113,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.settings.setValue(f'column {i}', self.tableWidget_table.columnWidth(i))
 
     def loadSetting(self):
+        self.checkBox_allnotclose.setChecked(self.settings.value('checkbox', 0))
         self.comboBox.setCurrentIndex(self.settings.value('combobox_spec', 0))
         self.comboBox_2.setCurrentIndex(self.settings.value('combobox_show', 0))
 
@@ -122,6 +126,9 @@ class System(QMainWindow, Ui_MainWindow):
 
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
+
+    def ChekboxEvent(self):
+        return self.checkBox_allnotclose.isChecked()
 
     def GetIdRadioButtons(self):
         return self.radio_group.checkedId()
@@ -277,12 +284,19 @@ class System(QMainWindow, Ui_MainWindow):
                               database=DATABASEMSSQL)
 
             mycursor = mydb.cursor()
+
+            allnotclose = self.ChekboxEvent()
+            param = 'True'
+            if allnotclose:
+                close_order = 'AND close_order !=' + "'" + param + "'"
+            else:
+                close_order = ''
             if show == 'All':
                 TOP = '*'
             else:
                 TOP = 'TOP' + ' ' + show + ' ' + 'id, subject, sender_name, specialist, copy, datetime_send, yes_no_attach'
             mycursor.execute(
-                f"SELECT {TOP} FROM email where uid_Division = {self.Data_Division()[0][0]} ORDER BY datetime_send DESC ")
+                f"SELECT {TOP} FROM email where uid_Division = {self.Data_Division()[0][0]} {close_order} ORDER BY datetime_send DESC ")
             result = mycursor.fetchall()
             self.tableWidget_table.setRowCount(0)
             # Смена имени колонки
@@ -452,6 +466,7 @@ class System(QMainWindow, Ui_MainWindow):
             try:
 
                 open_order = True
+                close_order = False
                 specialist = self.GetNameSpecialist()
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
@@ -464,7 +479,8 @@ class System(QMainWindow, Ui_MainWindow):
                 date = ks.strftime('%Y-%m-%d %H:%M:%S')
                 """-----------------"""
 
-                sql_insert_blob_query = f"""UPDATE email SET specialist = '{specialist}',control_period = '{date}', open_order = '{open_order}'   WHERE id = '{id}' """
+                sql_insert_blob_query = f"""UPDATE email SET specialist = '{specialist}',control_period = '{date}', 
+                open_order = '{open_order}', close_order = '{close_order}' WHERE id = '{id}' """
                 # Convert data into tuple format
 
                 result = cursor.execute(sql_insert_blob_query)
