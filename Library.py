@@ -278,6 +278,8 @@ class System(QMainWindow, Ui_MainWindow):
     """--------------------------------"""
 
     def ImportFromDatabaseAll(self):
+        self.label_statusneworder.clear()
+
         try:
             show = self.CurrentTextComboboxShow()
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
@@ -430,6 +432,7 @@ class System(QMainWindow, Ui_MainWindow):
             pass
 
     def SelectFromEmailForAnswerDialog(self):
+        self.label_statusneworder.clear()
         id = self.CellWasClicked()
         if id:
             try:
@@ -518,6 +521,7 @@ class System(QMainWindow, Ui_MainWindow):
             print(s)
 
     def SelectFromEmailAcceptedOrder(self):
+        self.label_statusneworder.clear()
         try:
             mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                               database=DATABASEMSSQL)
@@ -561,7 +565,6 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundKSColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
-            # self.radioButton_accepted.setChecked(True)
         except mc.Error as e:
             print(e)
         except Exception as erorr:

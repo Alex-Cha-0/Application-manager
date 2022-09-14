@@ -4,21 +4,38 @@
 
 и удаляет письмо с сервера.
 """
-
+from ldap import GetNameFromLdap
 import os
 import re
 from datetime import datetime
 import time
 import pymssql
 import pytz
-from exchangelib import DELEGATE, Account, Credentials, Configuration
+from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox
 import exchangelib.autodiscover
 from requests_kerberos import HTTPKerberosAuth
 import urllib3
 from cfg import SERVEREXCHANGE, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, \
-    DATABASEMSSQL, DIRECTORYATTACHMENTS
+    DATABASEMSSQL, DIRECTORYATTACHMENTS, SERVERAD, USERAD, PASSWORDAD, CORP
 
 tz = pytz.timezone('Europe/Moscow')
+
+
+def GetNameSpecialist():
+    server = SERVERAD
+    user = USERAD
+    password = PASSWORDAD
+    corp = CORP
+    result_name = GetNameFromLdap(server, user, password, corp).Cnname()
+    mydb = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                           database=DATABASEMSSQL)
+    mycursor = mydb.cursor()
+    mycursor.execute(f"select uid_Division from Staff where employee = '{result_name}'")
+    result = mycursor.fetchall()
+    return result[0][0]
+
+
+UID_DIVISION = GetNameSpecialist()
 
 
 def Data_Division():
@@ -130,46 +147,91 @@ class ConnectToExchange(object):
         """Подключаемся к Exchange"""
         print('CONNECT TO EXCHANGE -> ESTABLISHED')
 
-    def LastDate(self):
+    # def LastDate(self):
+    #     try:
+    #         conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+    #                                         database=DATABASEMSSQL)
+    #         cursor = conn_database.cursor()
+    #         sql_select_query = cursor.execute("select MAX(datetime_send) from email")
+    #         results = cursor.fetchall()
+    #         last_date = results
+    #         return str(last_date[0][0])
+    #     except IndexError:
+    #         print('list index out of range')
+
+    def SendInfoMessage(self, subject, body):
+
         try:
-            conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-                                            database=DATABASEMSSQL)
+            acc = self.connect()
+
             cursor = conn_database.cursor()
-            sql_select_query = cursor.execute("select MAX(datetime_send) from email")
-            results = cursor.fetchall()
-            last_date = results
-            return str(last_date[0][0])
-        except IndexError:
-            print('list index out of range')
+            sql_select_query = cursor.execute(f"select email_Staff from staff where uid_Division = {UID_DIVISION}")
+            result = cursor.fetchall()
+            recipients = result
+            to_recipients = []
+            for recipient in recipients:
+                to_recipients.append(Mailbox(email_address=recipient[0]))
+            # Create message
+            m = Message(account=acc,
+                        subject=subject,
+                        body=body,
+                        to_recipients=to_recipients)
+
+            m.send()
+        except Exception as s:
+            print(s)
 
     def GetItemAccountInbox(self):
         global cursor, conn_database
-        last_date = self.LastDate()
+        # last_date = self.LastDate()
         # date_str = str(datetime.today())
         # date = date_str.replace(':', '')
-        date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        date = date_str.replace(':', '')
+        #date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        #date = date_str.replace(':', '')
         for item in self.account.inbox.filter(is_read=False).order_by('-datetime_received'):
-
+            date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+            date = date_str.replace(':', '')
             try:
                 match = re.findall(r'##\w+', item.body)
-                ID = match[0].replace('##', '')
+                ID = int(match[0].replace('##', ''))
 
                 if ID:
                     conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                     database=DATABASEMSSQL)
                     cursor = conn_database.cursor()
-                    sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.text_body}', 
-                                            open_order = '{True}', close_order = '{False}' WHERE id = '{ID}' """
-                    result = cursor.execute(sql_insert_blob_query)
-                    conn_database.commit()
-                    cursor.close()
-                    conn_database.close()
+                    sql_query = cursor.execute(f"SELECT open_order, close_order FROM email WHERE id = {ID}")
+                    res = cursor.fetchall()
+                    if res[0][0] == res[0][1]:
+                        sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.text_body}' WHERE id = {ID}"""
+                        result = cursor.execute(sql_insert_blob_query)
+                        # Инфо письмо
+                        subject_update = item.subject
+                        body_update = f'Получен ответ по заявке "{ID}"\nТема: {subject_update}\nОписание: {item.text_body}'
+                        self.SendInfoMessage(subject_update, body_update)
+                        print(f'Ответ по заявке "{ID}" отправлен')
+                        item.delete()
 
+                        conn_database.commit()
+                        cursor.close()
+                        conn_database.close()
 
+                    else:
+                        sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.text_body}', 
+                                                                    open_order = '{True}', close_order = '{False}' WHERE id = {ID} """
+                        result = cursor.execute(sql_insert_blob_query)
 
-                    item.delete()
-                    print('Update выполнен')
+                        # Инфо письмо
+                        subject_update = item.subject
+                        body_update = f'Заявка "{ID}" возвращена в работу\nТема: {subject_update}\nОписание: {item.text_body}'
+                        self.SendInfoMessage(subject_update, body_update)
+                        print(f'Заявка "{ID}" возвращена в работу')
+
+                        item.delete()
+
+                        conn_database.commit()
+                        cursor.close()
+                        conn_database.close()
+
 
             except:
                 open_order = False
@@ -190,12 +252,16 @@ class ConnectToExchange(object):
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 
-
-
                 print(f'"{item.subject}" :, Успешно занесено в базу')
                 # Insert into Attachments DB
-                item.is_read = True
-                item.save()
+                #item.is_read = True
+                #item.save()
+                # Инфо письмо
+                subject = f'Заявка от {item.sender.name}, {item.subject}'
+                new_request = f'Новая заявка "{emailDB_id}" от {item.sender.name}!'.upper()
+                body = f'{new_request}\nТема: {item.subject}\nОписание:\n{item.text_body}'
+                self.SendInfoMessage(subject, body)
+                print('info message send!')
 
                 if CheckCreateDir(item.attachments):
                     directory = DirCreated(item.sender.name, date).Dir()
@@ -216,13 +282,10 @@ class ConnectToExchange(object):
                 conn_database.commit()
                 item.delete()
                 print('messege delete')
+                print("-----------")
                 cursor.close()
                 conn_database.close()
 
-            # except pymssql.Error as error:
-            #     return error
-            # except Exception as s:
-            #     pass
 
 
 while True:
@@ -235,7 +298,7 @@ while True:
             password = i[4]
             conn = ConnectToExchange(SERVEREXCHANGE, email, username, password, account,
                                      uid_Division).GetItemAccountInbox()
-            time.sleep(30)
+            time.sleep(5)
     except KeyboardInterrupt as s:
         print(s)
     except exchangelib.errors.ErrorFolderNotFound as error:

@@ -183,7 +183,7 @@ class Ui_MainWindow_reply(object):
         username = self.Data_Division()[0][3]
         password = self.Data_Division()[0][4]
         account = connect(server, email, username, password)
-        recipient = str(self.lineEdit_send_email.text()).replace(';', '').split()
+        recipients = str(self.lineEdit_send_email.text()).replace(';', '').split()
         copy = self.lineEdit_copy.text().replace(';', '').split()
         subject = self.lineEdit_subject.text()
         body = self.GetTExtFromWindow()
@@ -205,10 +205,21 @@ class Ui_MainWindow_reply(object):
 
             def Send(self):
                 try:
-                    m = Message(account=account, subject=subject, body=body,
-                                to_recipients=[Mailbox(email_address=' '.join(str(e) for e in recipient))],
+                    # m = Message(account=account, subject=subject, body=body,
+                    #             to_recipients=[Mailbox(email_address=' '.join(str(e) for e in recipients))],
+                    #             cc_recipients=copy)
+                    # m.send()
+                    to_recipients = []
+                    for recipient in recipients:
+                        to_recipients.append(Mailbox(email_address=recipient))
+                    # Create message
+                    m = Message(account=account,
+                                subject=subject,
+                                body=body,
+                                to_recipients=to_recipients,
                                 cc_recipients=copy)
-                    m.send()
+
+                    m.send_and_save()
 
                     status.setText('Сообщение отправлено!')
                     status.setStyleSheet('color:green')
