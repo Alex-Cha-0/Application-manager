@@ -1,5 +1,5 @@
 """Скрипт ответа на email"""
-
+from PyQt6.QtCore import QCoreApplication
 from requests_kerberos import HTTPKerberosAuth
 from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox
 
@@ -105,7 +105,7 @@ class Ui_MainWindow_reply(object):
         self.toolButton_send.clicked.connect(self.GetTExtFromWindow)
         self.toolButton_send.clicked.connect(self.ReplyEmail)
         self.toolButton_send.clicked.connect(self.UpdateReplyEmail)
-        # self.toolButton_send.clicked.connect(self.UpdateEmailCloseOrder)
+
         self.label_idcell.setVisible(False)
 
         self.retranslateUi(MainWindow_reply)
@@ -119,7 +119,6 @@ class Ui_MainWindow_reply(object):
         self.pushButton_copy.setText(_translate("MainWindow_reply", "Копия"))
         self.label_subject.setText(_translate("MainWindow_reply", "Тема :"))
         self.pushButton_3.setText(_translate("MainWindow_reply", "Вложение"))
-
 
     def Data_Division(self):
         server = SERVERAD
@@ -247,6 +246,7 @@ class Ui_MainWindow_reply(object):
             conn_database.commit()
             cursor.close()
             conn_database.close()
+
         except pymssql.Error as error:
             # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
             print(error)

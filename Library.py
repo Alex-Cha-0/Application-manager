@@ -24,17 +24,17 @@ from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMS
     SERVEREXCHANGE
 
 
-class System(QMainWindow, Ui_MainWindow):
+class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     def __init__(self):
         super().__init__()
         # Сохранение настроек
         self.settings = QSettings('app_manager', 'Ui_MainWindow')
-        try:
-            self.resize(self.settings.value('window size'))
-            self.move(self.settings.value('window position'))
-        except:
-            pass
+        # try:
+        #     self.resize(self.settings.value('window size'))
+        #     self.move(self.settings.value('window position'))
+        # except:
+        #     pass
 
         self.setupUi(self)
         self.show()
@@ -79,10 +79,12 @@ class System(QMainWindow, Ui_MainWindow):
 
         # Чекбокс
         self.checkBox_allnotclose.clicked.connect(self.ChekboxEvent)
+        self.checkBox_allnotclose.clicked.connect(self.ImportFromDatabaseAll)
 
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_MainWindow_reply()
-        self.ui.setupUi(self.window)
+        # self.window = QtWidgets.QMainWindow()
+        # self.ui = Ui_MainWindow_reply()
+        # self.ui.setupUi(self.window)
+
         ##################
         # ComboBox специалист
         self.comboBox.activated.connect(self.CurrentTextComboboxSpec)
@@ -92,16 +94,19 @@ class System(QMainWindow, Ui_MainWindow):
         self.comboBox_2.activated.connect(self.CurrentTextComboboxShow)
         # Кол-во колонок в таблице
         self.count_column = self.tableWidget_table.horizontalHeader().count()
-
+        #self.tableWidget_table.horizontalHeader().setSectionResizeMode()
     """Сохранение настроек"""
 
     def closeEvent(self, event):
-        self.settings.setValue('window size', self.size())
-        self.settings.setValue('window position', self.pos())
         self.saveSetting()
         event.accept()
 
     def saveSetting(self):
+        # self.settings.setValue('window size', self.size())
+        # self.settings.setValue('window position', self.pos())
+        self.settings.setValue('Geometry', self.saveGeometry())
+        self.settings.setValue('WindowState', self.saveState())
+
         self.settings.setValue('checkbox', int(self.ChekboxEvent()))
         self.settings.setValue('combobox_spec', self.comboBox.currentIndex())
         self.settings.setValue('combobox_show', self.comboBox_2.currentIndex())
@@ -112,7 +117,19 @@ class System(QMainWindow, Ui_MainWindow):
         for i in range(self.count_column):
             self.settings.setValue(f'column {i}', self.tableWidget_table.columnWidth(i))
 
+
     def loadSetting(self):
+        geometry = self.settings.value('Geometry')
+        if geometry:
+            self.restoreGeometry(geometry)
+
+        state = self.settings.value('WindowState')
+        if state:
+            self.restoreState(state)
+
+        # self.resize(self.settings.value('window size'))
+        # self.move(self.settings.value('window position'))
+
         self.checkBox_allnotclose.setChecked(self.settings.value('checkbox', 0))
         self.comboBox.setCurrentIndex(self.settings.value('combobox_spec', 0))
         self.comboBox_2.setCurrentIndex(self.settings.value('combobox_show', 0))
@@ -227,13 +244,14 @@ class System(QMainWindow, Ui_MainWindow):
         self.CountVrabote()
 
     """-------------------------------------"""
-
     # Открыть окно ответа на email
     def open_reply_window(self):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi(self.window)
+        #self.window.show()
         self.window.show()
+
 
     def GetNameSpecialist(self):
         server = SERVERAD
@@ -309,7 +327,7 @@ class System(QMainWindow, Ui_MainWindow):
             item = self.tableWidget_table.horizontalHeaderItem(2)
             item.setText("Автор")
             item = self.tableWidget_table.horizontalHeaderItem(3)
-            item.setText('Назначен специалист')
+            item.setText('Назначен спец')
             item = self.tableWidget_table.horizontalHeaderItem(4)
             item.setText("Копия")
             item = self.tableWidget_table.horizontalHeaderItem(5)
@@ -488,7 +506,8 @@ class System(QMainWindow, Ui_MainWindow):
 
                 result = cursor.execute(sql_insert_blob_query)
                 self.label_statusneworder.setText(f"'Заявка '{id}' принята в работу'")
-                self.label_statusneworder.setStyleSheet('color:green')
+                #self.label_statusneworder.setStyleSheet('color:green')
+
 
                 conn_database.commit()
                 cursor.close()
@@ -499,7 +518,8 @@ class System(QMainWindow, Ui_MainWindow):
 
         else:
             self.label_statusneworder.setText(f"'Заявка уже в работе'")
-            self.label_statusneworder.setStyleSheet('color : red')
+            #self.label_statusneworder.setStyleSheet('color : red')
+
 
     def CheckOrderIsOpen(self):
         try:
