@@ -71,6 +71,11 @@ class DirCreated(object):
             return dir
 
 
+    def InsertDirToMssql(self):
+
+        return self.sender_name + self.date
+
+
 class GetAttachments(object):
     """Получение вложений"""
 
@@ -93,6 +98,13 @@ class GetAttachments(object):
                     f.write(attachment.content)
         return Local_path_list
 
+    def AttachmentsName(self):
+        attach_name_lst = []
+        for attach in self.item:
+            if not attach.is_inline:
+                name = os.path.join(self.directory, attach.name)
+                attach_name_lst.append(name)
+        return attach_name_lst
 
 def CheckCreateDir(attachments):
     for i in attachments:
@@ -186,8 +198,8 @@ class ConnectToExchange(object):
         # last_date = self.LastDate()
         # date_str = str(datetime.today())
         # date = date_str.replace(':', '')
-        #date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        #date = date_str.replace(':', '')
+        # date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        # date = date_str.replace(':', '')
         for item in self.account.inbox.filter(is_read=False).order_by('-datetime_received'):
             date_str = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
             date = date_str.replace(':', '')
@@ -254,8 +266,8 @@ class ConnectToExchange(object):
 
                 print(f'"{item.subject}" :, Успешно занесено в базу')
                 # Insert into Attachments DB
-                #item.is_read = True
-                #item.save()
+                # item.is_read = True
+                # item.save()
                 # Инфо письмо
                 subject = f'Заявка от {item.sender.name}, {item.subject}'
                 new_request = f'Новая заявка "{emailDB_id}" от {item.sender.name}!'.upper()
@@ -264,10 +276,17 @@ class ConnectToExchange(object):
                 print('info message send!')
 
                 if CheckCreateDir(item.attachments):
+                    # Директория для создания вложений
                     directory = DirCreated(item.sender.name, date).Dir()
+                    # Директория для записи в базу
+                    direct = DirCreated(item.sender.name, date).InsertDirToMssql()
 
-                    attach = GetAttachments(item.attachments, directory).FileAttachment()
+                    attach = GetAttachments(item.attachments, direct).AttachmentsName()
+
                     for i in attach:
+                        # Запись вложений в папку
+                        GetAttachments(item.attachments, directory).FileAttachment()
+                        # Запись пути вложений без пути DIRECTOYATTACHMENTS
                         link = i
                         # Insert Attachments
                         add_Attachments = """INSERT INTO Attachments(link, id_email) VALUES (%s, %s)"""
@@ -285,7 +304,6 @@ class ConnectToExchange(object):
                 print("-----------")
                 cursor.close()
                 conn_database.close()
-
 
 
 while True:

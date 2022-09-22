@@ -1,13 +1,19 @@
 """Библиотека методов"""
 
 import os
+import shutil
+
 
 import PyQt5
 import pymssql
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QAction
 from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QFont, QColor, QBrush
-from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup
+from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup, QMessageBox, QMenu
 from PyQt6.QtCore import QSettings
+from PyQt6.uic.properties import QtCore
+
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
 from requests_kerberos import HTTPKerberosAuth
@@ -21,7 +27,7 @@ from datetime import datetime, timedelta
 from reply_email import Ui_MainWindow_reply
 
 from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP, \
-    SERVEREXCHANGE
+    SERVEREXCHANGE, DIRECTORYATTACHMENTS
 
 
 class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
@@ -72,9 +78,9 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
                                         self.SelectFromEmailClosedOrder]
         # Группа радиокнопок
         self.radio_group = QButtonGroup()
-        self.radio_group.addButton(self.radioButton_all,1)
-        self.radio_group.addButton(self.radioButton_accepted,2)
-        self.radio_group.addButton(self.radioButton_closed,3)
+        self.radio_group.addButton(self.radioButton_all, 1)
+        self.radio_group.addButton(self.radioButton_accepted, 2)
+        self.radio_group.addButton(self.radioButton_closed, 3)
         self.radio_group.buttonClicked.connect(self.GetIdRadioButtons)
 
         # Чекбокс
@@ -94,7 +100,22 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         self.comboBox_2.activated.connect(self.CurrentTextComboboxShow)
         # Кол-во колонок в таблице
         self.count_column = self.tableWidget_table.horizontalHeader().count()
-        #self.tableWidget_table.horizontalHeader().setSectionResizeMode()
+
+        # Контекстное меню в таблице
+        self.tableWidget_table.customContextMenuRequested.connect(self.context)
+
+    """Действия контекстного меню"""
+
+    def context(self, point):
+        menu = QtWidgets.QMenu()
+        if self.tableWidget_table.itemAt(point):
+            edit_question = QtGui.QAction('Удалить запись', menu)
+            edit_question.triggered.connect(lambda: self.CellDelete())
+            menu.addAction(edit_question)
+        else:
+            pass
+        menu.exec(self.tableWidget_table.mapToGlobal(point))
+
     """Сохранение настроек"""
 
     def closeEvent(self, event):
@@ -116,7 +137,6 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
         for i in range(self.count_column):
             self.settings.setValue(f'column {i}', self.tableWidget_table.columnWidth(i))
-
 
     def loadSetting(self):
         geometry = self.settings.value('Geometry')
@@ -143,6 +163,31 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
+
+    def CellDelete(self):
+        try:
+            id = self.CellWasClicked()
+            mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                              database=DATABASEMSSQL)
+            mycursor = mydb.cursor()
+            mycursor.execute(f'''SELECT Link from Attachments where id_email = {id}''')
+            result = mycursor.fetchall()
+            mycursor.execute(f'''Delete from Attachments where id_email = {id}''')
+            mycursor.execute(f'''Delete from email where id = {id}''')
+            mydb.commit()
+            mycursor.close()
+            res = result[0][0]
+            res_find = res.find('\\')
+            res_link = res[:res_find]
+            link = DIRECTORYATTACHMENTS + res_link
+            shutil.rmtree(link)
+            self.label_statusneworder.setText('Заявка удалена')
+            self.ImportFromDatabaseAll()
+
+        except Exception as s:
+            pass
+
+
 
     def ChekboxEvent(self):
         return self.checkBox_allnotclose.isChecked()
@@ -244,14 +289,14 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         self.CountVrabote()
 
     """-------------------------------------"""
+
     # Открыть окно ответа на email
     def open_reply_window(self):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow_reply()
         self.ui.setupUi(self.window)
-        #self.window.show()
+        # self.window.show()
         self.window.show()
-
 
     def GetNameSpecialist(self):
         server = SERVERAD
@@ -265,9 +310,9 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         # Функция - открыть страницу с индексом - 1
         self.tabWidget.setCurrentIndex(1)
 
-    def GoToPage2(self):
-        # Функция - открыть страницу с индексом - 2
-        self.tabWidget.setCurrentIndex(2)
+    # def GoToPage2(self):
+    #     # Функция - открыть страницу с индексом - 2
+    #     self.tabWidget.setCurrentIndex(2)
 
     def CellWasClicked(self):
         # Функция - получить ID письма
@@ -281,15 +326,14 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     def CellWasClickedAttachTable(self):
         current_row = self.tableWidget.currentRow()
-        current_column = self.tableWidget.currentColumn()
+        #current_column = self.tableWidget.currentColumn()
         cell_value = self.tableWidget.item(current_row, 1).text()
         return cell_value
 
     def StartOpenAttachment(self):
         try:
-            cell = self.CellWasClickedAttachTable()
-            link = cell
-            os.startfile(link)
+            link = self.CellWasClickedAttachTable()
+            os.startfile(DIRECTORYATTACHMENTS + link)
         except Exception as s:
             print(s)
 
@@ -344,7 +388,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
-            #self.SetAcceptCollor()
+            # self.SetAcceptCollor()
         except mc.Error as e:
             print(e)
 
@@ -398,30 +442,26 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
             # self.label_erorr3.setText("Ничего не выбрано")
             pass
 
-    def ShowAttach(self):
-        id_email = self.CellWasClicked()
-
-        try:
-            conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
-                                            database=DATABASEMSSQL)
-            cursor = conn_database.cursor()
-            sql_select_query = cursor.execute(f"""SELECT Link FROM Attachments WHERE id_email = {id_email}""")
-
-            result = cursor.fetchall()
-            fname = QFileDialog.getOpenFileName(self, "Open file", result[0][0])
-
-            os.startfile(fname[0])
-
-            # if fname[0]:
-            #     f = open(fname[0], 'r')
-            #
-            #     with f:
-            #         data = f.read()
-        except IndexError:
-            print('list index out of range')
-        except Exception as s:
-            # self.label_error2.setText(f'{s}')
-            pass
+    # def ShowAttach(self):
+    #     id_email = self.CellWasClicked()
+    #
+    #     try:
+    #         conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+    #                                         database=DATABASEMSSQL)
+    #         cursor = conn_database.cursor()
+    #         sql_select_query = cursor.execute(f"""SELECT Link FROM Attachments WHERE id_email = {id_email}""")
+    #
+    #         result = cursor.fetchall()
+    #         print(DIRECTORYATTACHMENTS + result[0][0])
+    #         fname = QFileDialog.getOpenFileName(self, "Open file", result[0][0])
+    #
+    #         os.startfile(fname[0])
+    #
+    #
+    #     except IndexError:
+    #         print('list index out of range')
+    #     except Exception as s:
+    #         pass
 
     def SelectFromAttachDataToTable(self):
         id_email = self.CellWasClicked()
@@ -433,7 +473,6 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
                 mycursor = mydb.cursor()
                 mycursor.execute(f"SELECT link FROM Attachments where id_email = {id_email}")
                 result = mycursor.fetchall()
-
                 self.tableWidget.setRowCount(0)
 
                 for row_number, row_data in enumerate(result):
@@ -506,8 +545,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
                 result = cursor.execute(sql_insert_blob_query)
                 self.label_statusneworder.setText(f"'Заявка '{id}' принята в работу'")
-                #self.label_statusneworder.setStyleSheet('color:green')
-
+                # self.label_statusneworder.setStyleSheet('color:green')
 
                 conn_database.commit()
                 cursor.close()
@@ -518,8 +556,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
         else:
             self.label_statusneworder.setText(f"'Заявка уже в работе'")
-            #self.label_statusneworder.setStyleSheet('color : red')
-
+            # self.label_statusneworder.setStyleSheet('color : red')
 
     def CheckOrderIsOpen(self):
         try:
