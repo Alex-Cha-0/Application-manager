@@ -2,7 +2,7 @@
 
 import os
 import shutil
-
+import sys
 
 import PyQt5
 import pymssql
@@ -11,13 +11,13 @@ from PyQt5.QtWidgets import QAction
 from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QFont, QColor, QBrush
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup, QMessageBox, QMenu
-from PyQt6.QtCore import QSettings
+from PyQt6.QtCore import QSettings, QUrl
 from PyQt6.uic.properties import QtCore
 
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
 from requests_kerberos import HTTPKerberosAuth
-from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox
+from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox, FileAttachment
 import pytz
 
 import urllib3
@@ -29,21 +29,22 @@ from reply_email import Ui_MainWindow_reply
 from cfg import SERVERAD, USERAD, PASSWORDAD, SERVERMSSQL, USERMSSQL, PASSWORDMSSQL, DATABASEMSSQL, CORP, \
     SERVEREXCHANGE, DIRECTORYATTACHMENTS
 
+LINK_ATTACHMENTS = []
 
-class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
+
+class System(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super().__init__()
         # Сохранение настроек
         self.settings = QSettings('app_manager', 'Ui_MainWindow')
-        # try:
-        #     self.resize(self.settings.value('window size'))
-        #     self.move(self.settings.value('window position'))
-        # except:
-        #     pass
-
         self.setupUi(self)
         self.show()
+
+        self.window = QtWidgets.QMainWindow()
+        self.ui = Ui_MainWindow_reply()
+
+        self.ui.setupUi(self.window)
 
         """REFRESH"""
         self.toolButton_refresh.clicked.connect(self.ImportFromDatabaseAll)
@@ -62,6 +63,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         # Действия в таблице вложений
         self.tableWidget.cellClicked.connect(self.tableWidget_cellDoubleClicked)
         # Кнопка ответа на письмо
+        self.toolButton_reply.clicked.connect(self.ClearLinkAttachments)
         self.toolButton_reply.clicked.connect(self.toolButton_replyclicked)
         # Кнопка закрытия заявки
         self.toolButton_closeorder.clicked.connect(self.toolButton_closeorderclicked)
@@ -87,10 +89,6 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         self.checkBox_allnotclose.clicked.connect(self.ChekboxEvent)
         self.checkBox_allnotclose.clicked.connect(self.ImportFromDatabaseAll)
 
-        # self.window = QtWidgets.QMainWindow()
-        # self.ui = Ui_MainWindow_reply()
-        # self.ui.setupUi(self.window)
-
         ##################
         # ComboBox специалист
         self.comboBox.activated.connect(self.CurrentTextComboboxSpec)
@@ -104,12 +102,26 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
         # Контекстное меню в таблице
         self.tableWidget_table.customContextMenuRequested.connect(self.context)
 
+        # Кнопки из reply_email
+
+        self.ui.toolButton_send.clicked.connect(self.GetTExtFromWindow)
+        self.ui.toolButton_send.clicked.connect(self.ReplyEmail)
+        self.ui.toolButton_send.clicked.connect(self.UpdateReplyEmail)
+
+        self.ui.pushButton_3.clicked.connect(self.openFileNameDialog)
+        self.ui.pushButton_3.clicked.connect(self.NameOfAttachments)
+
+        #self.ui.pushButton_copy.clicked.connect(lambda : print(LINK_ATTACHMENTS))
+        #self.ui.label_nameofattachments.setText()
+
+        self.ui.label_idcell.setVisible(False)
+
     """Действия контекстного меню"""
 
     def context(self, point):
         menu = QtWidgets.QMenu()
         if self.tableWidget_table.itemAt(point):
-            edit_question = QtGui.QAction('Удалить запись', menu)
+            edit_question = QtGui.QAction('Удалить заявку?', menu)
             edit_question.triggered.connect(lambda: self.CellDelete())
             menu.addAction(edit_question)
         else:
@@ -164,6 +176,20 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
 
+    def ClearLinkAttachments(self):
+        LINK_ATTACHMENTS.clear()
+        self.ui.label_nameofattachments.clear()
+
+    def NameOfAttachments(self):
+        name_attach = []
+        for i in LINK_ATTACHMENTS:
+            name = QUrl.fromLocalFile(i).fileName()
+            name_attach.append(name)
+        ls = ', '.join(name_attach)
+        self.ui.label_nameofattachments.setText(ls)
+
+
+
     def CellDelete(self):
         try:
             id = self.CellWasClicked()
@@ -186,8 +212,6 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
         except Exception as s:
             pass
-
-
 
     def ChekboxEvent(self):
         return self.checkBox_allnotclose.isChecked()
@@ -269,11 +293,13 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     def toolButton_closeorderclicked(self):
         self.UpdateEmailCloseOrder()
+        self.SelectFromEmailAcceptedOrder()
         self.CountVrabote()
 
     def toolButton_replyclicked(self):
         self.open_reply_window()
         self.SelectFromEmailForAnswerDialog()
+
 
     def tableWidget_cellDoubleClicked(self):
         self.CellWasClickedAttachTable()
@@ -292,11 +318,21 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     # Открыть окно ответа на email
     def open_reply_window(self):
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_MainWindow_reply()
-        self.ui.setupUi(self.window)
-        # self.window.show()
+        # self.window = QtWidgets.QMainWindow()
+        # self.ui = Ui_MainWindow_reply()
+        #
+        # self.ui.setupUi(self.window)
         self.window.show()
+
+    def openFileNameDialog(self):
+
+        res, _ = QFileDialog.getOpenFileName(None, 'Open File', './',
+                                              "All Files (*);;Images (*.png *.xpm *.jpg);;Text files ("
+                                              "*.txt);;XML files (*.xml);;PDF Files ("
+                                              "*.pdf)")
+        if res:
+            LINK_ATTACHMENTS.append(res)
+
 
     def GetNameSpecialist(self):
         server = SERVERAD
@@ -326,7 +362,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     def CellWasClickedAttachTable(self):
         current_row = self.tableWidget.currentRow()
-        #current_column = self.tableWidget.currentColumn()
+        # current_column = self.tableWidget.currentColumn()
         cell_value = self.tableWidget.item(current_row, 1).text()
         return cell_value
 
@@ -388,7 +424,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
-            # self.SetAcceptCollor()
+
         except mc.Error as e:
             print(e)
 
@@ -511,7 +547,6 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
                 self.ui.label_idcell.setText(id)
                 self.ui.textEdit_from.setText(
                     f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
-
 
             except mc.Error as error:
                 pass
@@ -654,7 +689,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
                     cursor.close()
                     conn_database.close()
 
-                    self.ReplyEmail()
+                    self.FastReplyEmail()
 
                 except pymssql.Error as error:
                     # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
@@ -889,7 +924,7 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
     """Быстрый ответ при закрытии заявки"""
 
-    def ReplyEmail(self):
+    def FastReplyEmail(self):
         def auth_model(**kwargs):
             # get kerberos ticket
             return HTTPKerberosAuth()
@@ -981,3 +1016,132 @@ class System(QMainWindow, Ui_MainWindow, Ui_MainWindow_reply):
 
         conn = ConnectToExchange(server, email, username, account)
         conn.Send()
+
+    """Код для reply_email, ответ на заявку"""
+
+    def IdCellInAppManger(self):
+        id_c = self.CellWasClicked()
+        return int(id_c)
+
+    def GetTExtFromWindow(self):
+        textBrowser_reply = self.ui.textBrowser_reply.toPlainText()
+        textEdit_perlyemail = self.ui.textEdit_perlyemail.toPlainText()
+        textFrom = self.ui.textEdit_from.toPlainText()
+
+        body = textEdit_perlyemail + '\n' + '\n' + '-------------' + '\n' + textFrom + '\n' + '\n' + textBrowser_reply
+        return body
+
+    def ReplyEmail(self):
+        def auth_model(**kwargs):
+            # get kerberos ticket
+            return HTTPKerberosAuth()
+
+        urllib3.disable_warnings()
+        tz = pytz.timezone('Europe/Moscow')
+
+        def connect(server, email, username, password):
+            from exchangelib.protocol import BaseProtocol, NoVerifyHTTPAdapter
+            # Care! Ignor Exchange self-signed SSL cert
+            BaseProtocol.HTTP_ADAPTER_CLS = NoVerifyHTTPAdapter
+
+            # fill Credential object with empty fields
+            creds = Credentials(
+                username=username,
+                password=password
+            )
+
+            # add kerberos as GSSAPI auth_type
+            # exchangelib.transport.AUTH_TYPE_MAP["GSSAPI"] = auth_model
+
+            # Create Config
+            config = Configuration(server=server, credentials=creds)
+            # return result
+            return Account(primary_smtp_address=email, autodiscover=False, config=config, access_type=DELEGATE)
+
+        server = SERVEREXCHANGE
+        # email = EMAILADDRESS
+        # username = USEREXECHANGE
+        # password = USEREXECHANGEPASS
+        email = self.Data_Division()[0][2]
+        username = self.Data_Division()[0][3]
+        password = self.Data_Division()[0][4]
+        account = connect(server, email, username, password)
+        recipients = str(self.ui.lineEdit_send_email.text()).replace(';', '').split()
+        copy = self.ui.lineEdit_copy.text().replace(';', '').split()
+        subject = self.ui.lineEdit_subject.text()
+        body = self.GetTExtFromWindow()
+
+        status = self.ui.label_status
+
+        class ConnectToExchange(object):
+            """docstring"""
+            status.setText('ConnectToExchange')
+            status.setStyleSheet('color:green')
+
+            def __init__(self, server, email, username, account):
+                """Constructor"""
+
+                self.server = server
+                self.email = email
+                self.username = username
+                self.account = account
+
+            def Send(self):
+                try:
+                    ## Read attachments
+                    attachments = []
+                    for i in LINK_ATTACHMENTS:
+                        with open(i, 'rb') as f:
+                            content = f.read()
+                            name_file = QUrl.fromLocalFile(i).fileName()
+
+                        attachments.append((name_file, content))
+
+                    ##
+                    to_recipients = []
+                    for recipient in recipients:
+                        to_recipients.append(Mailbox(email_address=recipient))
+                    # Create message
+                    m = Message(account=account,
+                                subject=subject,
+                                body=body,
+                                to_recipients=to_recipients,
+                                cc_recipients=copy)
+                    # attach files
+                    for attachment_name, attachment_content in attachments or []:
+                        file = FileAttachment(name=attachment_name, content=attachment_content)
+                        m.attach(file)
+                    #
+
+                    m.send_and_save()
+
+                    status.setText('Сообщение отправлено!')
+                    status.setStyleSheet('color:green')
+
+                except Exception as s:
+                    print(s)
+
+        conn = ConnectToExchange(server, email, username, account)
+        conn.Send()
+
+    def UpdateReplyEmail(self):
+        id = self.IdCellInAppManger()
+        body = self.GetTExtFromWindow()
+        reply = True
+        try:
+
+            conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                                            database=DATABASEMSSQL)
+            cursor = conn_database.cursor()
+            # Sql query
+            sql_insert_blob_query = f"""UPDATE email SET text_body = '{body}', reply_email = '{reply}'  WHERE id = '{id}' """
+            # Convert data into tuple format
+
+            result = cursor.execute(sql_insert_blob_query)
+            conn_database.commit()
+            cursor.close()
+            conn_database.close()
+
+        except pymssql.Error as error:
+            # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
+            print(error)

@@ -1,7 +1,4 @@
 import sys
-# Импортируем наш интерфейс из файла
-# from app_manager import Ui_MainWindow  # design
-# from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QDialog
 from Library import System
 
