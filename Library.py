@@ -102,8 +102,6 @@ class System(QMainWindow, Ui_MainWindow):
         # Контекстное меню в таблице
         self.tableWidget_table.customContextMenuRequested.connect(self.context)
 
-
-
         # Кнопки из reply_email
 
         self.ui.toolButton_send.clicked.connect(self.GetTExtFromWindow)
@@ -174,6 +172,10 @@ class System(QMainWindow, Ui_MainWindow):
 
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
+
+    def ColumnToContex(self):
+        for i in range(2,7):
+            self.tableWidget_table.resizeColumnToContents(i)
 
     def CreatePushButtons(self):
         self.ui.button = QPushButton("CLICK", self)
@@ -431,7 +433,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
-            self.tableWidget_table.resizeColumnsToContents()
+            self.ColumnToContex()
 
         except mc.Error as e:
             print(e)
@@ -665,7 +667,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundKSColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
-            self.tableWidget_table.resizeColumnsToContents()
+            self.ColumnToContex()
         except mc.Error as e:
             print(e)
         except Exception as erorr:
@@ -765,7 +767,7 @@ class System(QMainWindow, Ui_MainWindow):
 
             self.SetAttachIcon()
             self.SetReplyIcon()
-            #self.tableWidget_table.resizeColumnsToContents()
+            self.ColumnToContex()
         except mc.Error as e:
             pass
         except Exception as erorr:
@@ -1156,11 +1158,13 @@ class System(QMainWindow, Ui_MainWindow):
             # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
             print(error)
 
-
     def resizeEvent(self, resize: QtGui.QResizeEvent) -> None:
         width = resize.size().width()
         font_size = (width // 100)
-        self.textBrowser_email_1.setStyleSheet(f"background-color: rgb(255, 255, 255);font: 25 {font_size}pt \"Calibri\";")
+        self.textBrowser_email_1.setStyleSheet(
+            f"background-color: rgb(255, 255, 255);font: 25 {font_size}pt \"Calibri\";")
         self.tableWidget.setStyleSheet(f"font: 25 {font_size}pt \"Calibri\";")
-        self.tableWidget_table.setStyleSheet(f"selection-background-color: #b0e0e6; font: 25 {font_size}pt \"Calibri\";")
-        self.tableWidget_table.resizeColumnsToContents()
+        self.tableWidget_table.setStyleSheet(
+            f"selection-background-color: #b0e0e6; font: 25 {font_size}pt \"Calibri\";")
+        # self.tableWidget_table.resizeColumnsToContents()
+        self.ColumnToContex()
