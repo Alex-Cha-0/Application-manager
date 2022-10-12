@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAction
 from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QFont, QColor, QBrush
-from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup, QMessageBox, QMenu
+from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup, QMessageBox, QMenu, QPushButton
 from PyQt6.QtCore import QSettings, QUrl
 from PyQt6.uic.properties import QtCore
 
@@ -102,6 +102,8 @@ class System(QMainWindow, Ui_MainWindow):
         # Контекстное меню в таблице
         self.tableWidget_table.customContextMenuRequested.connect(self.context)
 
+
+
         # Кнопки из reply_email
 
         self.ui.toolButton_send.clicked.connect(self.GetTExtFromWindow)
@@ -110,9 +112,6 @@ class System(QMainWindow, Ui_MainWindow):
 
         self.ui.pushButton_3.clicked.connect(self.openFileNameDialog)
         self.ui.pushButton_3.clicked.connect(self.NameOfAttachments)
-
-        #self.ui.pushButton_copy.clicked.connect(lambda : print(LINK_ATTACHMENTS))
-        #self.ui.label_nameofattachments.setText()
 
         self.ui.label_idcell.setVisible(False)
 
@@ -176,19 +175,26 @@ class System(QMainWindow, Ui_MainWindow):
     ##########################################################
     """ФУНКЦИИ СЛОТЫ"""
 
+    def CreatePushButtons(self):
+        self.ui.button = QPushButton("CLICK", self)
+        self.ui.button.move(700, 100)
+        self.ui.button.setObjectName('pushButton_00')
+        self.ui.button.setText('1.txt')
+
     def ClearLinkAttachments(self):
         LINK_ATTACHMENTS.clear()
         self.ui.label_nameofattachments.clear()
 
     def NameOfAttachments(self):
         name_attach = []
+
         for i in LINK_ATTACHMENTS:
             name = QUrl.fromLocalFile(i).fileName()
             name_attach.append(name)
         ls = ', '.join(name_attach)
         self.ui.label_nameofattachments.setText(ls)
 
-
+        self.CreatePushButtons()
 
     def CellDelete(self):
         try:
@@ -300,7 +306,6 @@ class System(QMainWindow, Ui_MainWindow):
         self.open_reply_window()
         self.SelectFromEmailForAnswerDialog()
 
-
     def tableWidget_cellDoubleClicked(self):
         self.CellWasClickedAttachTable()
         self.StartOpenAttachment()
@@ -324,15 +329,17 @@ class System(QMainWindow, Ui_MainWindow):
         # self.ui.setupUi(self.window)
         self.window.show()
 
+    # Открыть окно выбора файлов
     def openFileNameDialog(self):
-
-        res, _ = QFileDialog.getOpenFileName(None, 'Open File', './',
-                                              "All Files (*);;Images (*.png *.xpm *.jpg);;Text files ("
-                                              "*.txt);;XML files (*.xml);;PDF Files ("
-                                              "*.pdf)")
-        if res:
-            LINK_ATTACHMENTS.append(res)
-
+        try:
+            res, _ = QFileDialog.getOpenFileNames(None, 'Open File', './',
+                                                  "All Files (*);;Images (*.png *.xpm *.jpg);;Text files ("
+                                                  "*.txt);;XML files (*.xml);;PDF Files ("
+                                                  "*.pdf)")
+            if res:
+                LINK_ATTACHMENTS.extend(res)
+        except Exception as s:
+            pass
 
     def GetNameSpecialist(self):
         server = SERVERAD
@@ -424,6 +431,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetAttachIcon()
             self.SetReplyIcon()
             self.CountVrabote()
+            self.tableWidget_table.resizeColumnsToContents()
 
         except mc.Error as e:
             print(e)
@@ -657,6 +665,7 @@ class System(QMainWindow, Ui_MainWindow):
             self.SetBackgroundKSColor()
             self.SetAttachIcon()
             self.SetReplyIcon()
+            self.tableWidget_table.resizeColumnsToContents()
         except mc.Error as e:
             print(e)
         except Exception as erorr:
@@ -756,6 +765,7 @@ class System(QMainWindow, Ui_MainWindow):
 
             self.SetAttachIcon()
             self.SetReplyIcon()
+            #self.tableWidget_table.resizeColumnsToContents()
         except mc.Error as e:
             pass
         except Exception as erorr:
@@ -1145,3 +1155,12 @@ class System(QMainWindow, Ui_MainWindow):
         except pymssql.Error as error:
             # self.label_erorr3.setText("Failed inserting BLOB data into MySQL table {}".format(error))
             print(error)
+
+
+    def resizeEvent(self, resize: QtGui.QResizeEvent) -> None:
+        width = resize.size().width()
+        font_size = (width // 100)
+        self.textBrowser_email_1.setStyleSheet(f"background-color: rgb(255, 255, 255);font: 25 {font_size}pt \"Calibri\";")
+        self.tableWidget.setStyleSheet(f"font: 25 {font_size}pt \"Calibri\";")
+        self.tableWidget_table.setStyleSheet(f"selection-background-color: #b0e0e6; font: 25 {font_size}pt \"Calibri\";")
+        self.tableWidget_table.resizeColumnsToContents()

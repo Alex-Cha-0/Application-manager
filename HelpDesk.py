@@ -10,5 +10,4 @@ library.ImportFromDatabaseAll()
 library.ComboBoxSpec()
 library.CountVrabote()
 library.loadSetting()
-
 sys.exit(app.exec())

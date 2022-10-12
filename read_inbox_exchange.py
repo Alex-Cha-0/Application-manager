@@ -70,9 +70,7 @@ class DirCreated(object):
             os.mkdir(dir)
             return dir
 
-
     def InsertDirToMssql(self):
-
         return self.sender_name + self.date
 
 
@@ -105,6 +103,7 @@ class GetAttachments(object):
                 name = os.path.join(self.directory, attach.name)
                 attach_name_lst.append(name)
         return attach_name_lst
+
 
 def CheckCreateDir(attachments):
     for i in attachments:
@@ -189,7 +188,7 @@ class ConnectToExchange(object):
                         body=body,
                         to_recipients=to_recipients)
 
-            m.send()
+            m.send(save_copy=False)
         except Exception as s:
             print(s)
 
@@ -219,6 +218,7 @@ class ConnectToExchange(object):
                         # Инфо письмо
                         subject_update = item.subject
                         body_update = f'Получен ответ по заявке "{ID}"\nТема: {subject_update}\nОписание: {item.text_body}'
+                        # Отправка инфо письма
                         self.SendInfoMessage(subject_update, body_update)
                         print(f'Ответ по заявке "{ID}" отправлен')
                         item.delete()
@@ -235,6 +235,7 @@ class ConnectToExchange(object):
                         # Инфо письмо
                         subject_update = item.subject
                         body_update = f'Заявка "{ID}" возвращена в работу\nТема: {subject_update}\nОписание: {item.text_body}'
+                        # Отправка инфо письма
                         self.SendInfoMessage(subject_update, body_update)
                         print(f'Заявка "{ID}" возвращена в работу')
 
@@ -265,13 +266,12 @@ class ConnectToExchange(object):
                 emailDB_id = cursor.lastrowid
 
                 print(f'"{item.subject}" :, Успешно занесено в базу')
-                # Insert into Attachments DB
-                # item.is_read = True
-                # item.save()
+
                 # Инфо письмо
                 subject = f'Заявка от {item.sender.name}, {item.subject}'
                 new_request = f'Новая заявка "{emailDB_id}" от {item.sender.name}!'.upper()
                 body = f'{new_request}\nТема: {item.subject}\nОписание:\n{item.text_body}'
+                # Отправка инфо письма
                 self.SendInfoMessage(subject, body)
                 print('info message send!')
 
