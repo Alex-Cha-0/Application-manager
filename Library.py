@@ -13,11 +13,12 @@ from PyQt6.QtGui import QFont, QColor, QBrush
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QButtonGroup, QMessageBox, QMenu, QPushButton
 from PyQt6.QtCore import QSettings, QUrl
 from PyQt6.uic.properties import QtCore
+from bs4 import BeautifulSoup
 
 from app_manager import Ui_MainWindow
 from ldap import GetNameFromLdap
 from requests_kerberos import HTTPKerberosAuth
-from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox, FileAttachment
+from exchangelib import DELEGATE, Account, Credentials, Configuration, Message, Mailbox, FileAttachment, HTMLBody
 import pytz
 
 import urllib3
@@ -59,6 +60,8 @@ class System(QMainWindow, Ui_MainWindow):
         self.tableWidget_table.cellClicked.connect(self.cellDoubleClicked)
 
         self.tableWidget_table.doubleClicked.connect(self.DoubleClickedAtAllOrder)
+
+        self.toolButton_reply.clicked.connect(self.GetTExtFromWindow)
 
         # Действия в таблице вложений
         self.tableWidget.cellClicked.connect(self.tableWidget_cellDoubleClicked)
@@ -106,7 +109,7 @@ class System(QMainWindow, Ui_MainWindow):
 
         self.ui.toolButton_send.clicked.connect(self.GetTExtFromWindow)
         self.ui.toolButton_send.clicked.connect(self.ReplyEmail)
-        self.ui.toolButton_send.clicked.connect(self.UpdateReplyEmail)
+        # self.ui.toolButton_send.clicked.connect(self.UpdateReplyEmail)
 
         self.ui.pushButton_3.clicked.connect(self.openFileNameDialog)
         self.ui.pushButton_3.clicked.connect(self.NameOfAttachments)
@@ -174,7 +177,7 @@ class System(QMainWindow, Ui_MainWindow):
     """ФУНКЦИИ СЛОТЫ"""
 
     def ColumnToContex(self):
-        for i in range(2,7):
+        for i in range(2, 7):
             self.tableWidget_table.resizeColumnToContents(i)
 
     def CreatePushButtons(self):
@@ -555,8 +558,28 @@ class System(QMainWindow, Ui_MainWindow):
                 self.ui.lineEdit_copy.setText(result[0][1])
                 self.ui.lineEdit_subject.setText(subject_email)
                 self.ui.label_idcell.setText(id)
-                self.ui.textEdit_from.setText(
-                    f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
+                # self.ui.textEdit_from.setText(
+                #     f'От кого: {result[0][4]}, {result[0][0]}\nДата: {result[0][5]}\nКому: {result[0][6]}\nТема: {result[0][2]}')
+                self.ui.textEdit_from.setHtml(
+                    '< div >'
+                    '< div'
+                'style = "border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm" >'
+                        '< p'
+
+                'class ="MsoNormal" >  < span style="mso-fareast-language:RU" > From:<'
+
+                    '/ span >  < span'
+                f'style = "mso-fareast-language:RU" > {result[0][4]}'
+                
+            '< br / >'
+            f' Sent:  {result[0][5]}< br / >'
+            f' To: "{result[0][6]}"< a'
+            f'href = "{result[0][6]}" > < / a >< br / >'
+            f' Subject:  {result[0][2]}'
+            '< o: p > < / o: p > < / span > < / p >'
+        '< / div >'
+        '< / div >'
+        )
 
             except mc.Error as error:
                 pass
@@ -1036,11 +1059,39 @@ class System(QMainWindow, Ui_MainWindow):
         return int(id_c)
 
     def GetTExtFromWindow(self):
-        textBrowser_reply = self.ui.textBrowser_reply.toPlainText()
-        textEdit_perlyemail = self.ui.textEdit_perlyemail.toPlainText()
-        textFrom = self.ui.textEdit_from.toPlainText()
+        textFrom = self.ui.textEdit_from.toHtml()
+        sup_txfr = BeautifulSoup(textFrom, 'html.parser')
 
-        body = textEdit_perlyemail + '\n' + '\n' + '-------------' + '\n' + textFrom + '\n' + '\n' + textBrowser_reply
+        div_tag = sup_txfr.find("body")
+        alex_tag = div_tag.find("p")
+        new_tag = sup_txfr.new_tag("p")
+        hr_tag = sup_txfr.new_tag("hr")
+        new_tag.string = self.ui.textEdit_perlyemail.toPlainText()
+        alex_tag.insert_after(hr_tag)
+        alex_tag.insert_after(new_tag)
+
+        html_textFrom = sup_txfr.body
+        def edit_body(namefolder, body):
+            soup = BeautifulSoup(body, 'html.parser')
+            for index, img in enumerate(soup.findAll('img')):
+                cid = img['src'][4:12] + '.png'
+                img['src'] = f'http://10.1.0.31:9800/app_manager/attachments/{namefolder}/inline/{cid}'
+
+            div_tag = soup.find('div')
+            div_tag.insert_before(html_textFrom)
+            my_html_string = str(soup).replace("'", '')
+
+            return my_html_string
+
+        id_cell = self.CellWasClicked()
+        mydb = mc.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                          database=DATABASEMSSQL)
+
+        mycursor = mydb.cursor()
+        sql_select_query = mycursor.execute(
+            f"""SELECT html_body FROM email WHERE id = {id_cell}""")
+        result_ = mycursor.fetchall()
+        body = edit_body(id_cell, result_[0][0])
         return body
 
     def ReplyEmail(self):
@@ -1081,7 +1132,9 @@ class System(QMainWindow, Ui_MainWindow):
         recipients = str(self.ui.lineEdit_send_email.text()).replace(';', '').split()
         copy = self.ui.lineEdit_copy.text().replace(';', '').split()
         subject = self.ui.lineEdit_subject.text()
-        body = self.GetTExtFromWindow()
+        body = HTMLBody(
+            '<html><body>%s</body></html>' % self.GetTExtFromWindow()
+        )
 
         status = self.ui.label_status
 
@@ -1160,11 +1213,20 @@ class System(QMainWindow, Ui_MainWindow):
 
     def resizeEvent(self, resize: QtGui.QResizeEvent) -> None:
         width = resize.size().width()
-        font_size = (width // 100)
+        font_size_for_table = (width // 100) - 2
+        font_size_for_label = (width // 100) - 4
         self.textBrowser_email_1.setStyleSheet(
-            f"background-color: rgb(255, 255, 255);font: 25 {font_size}pt \"Calibri\";")
-        self.tableWidget.setStyleSheet(f"font: 25 {font_size}pt \"Calibri\";")
+            f"background-color: rgb(255, 255, 255);font: 25 {font_size_for_table}pt \"Calibri\";")
+        self.tableWidget.setStyleSheet(f"font: 25 {font_size_for_table}pt \"Calibri\";")
         self.tableWidget_table.setStyleSheet(
-            f"selection-background-color: #b0e0e6; font: 25 {font_size}pt \"Calibri\";")
-        # self.tableWidget_table.resizeColumnsToContents()
+            f"selection-background-color: #b0e0e6; font: 25 {font_size_for_table}pt \"Calibri\";")
         self.ColumnToContex()
+
+        self.label_time_send.setStyleSheet(f"font: {font_size_for_label}pt \"Calibri\";\n"
+                                           "border-radius: 4px;\n"
+                                           "background-color: #b0e0e6;\n"
+                                           "")
+        self.label_v_rabote.setStyleSheet(f"font: {font_size_for_label + 2}pt \"Calibri\";\n")
+        self.label_count_v_rabote.setStyleSheet(f"font: {font_size_for_label + 2}pt \"Calibri\";\n")
+        self.label_4.setStyleSheet(f"font: {font_size_for_label + 2}pt \"Calibri\";\n")
+        self.label_5.setStyleSheet(f"font: {font_size_for_label + 2}pt \"Calibri\";\n")
