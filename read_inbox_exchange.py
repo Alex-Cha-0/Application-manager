@@ -25,15 +25,23 @@ tz = pytz.timezone('Europe/Moscow')
 
 
 def body_parse(namefolder, item):
-    path = f'\\\\sft\\app_manager\\attachments\\{namefolder}\\inline\\'
-    # with open(item, "r") as fp:
-    #     soup = BeautifulSoup(fp, 'html.parser')
-
+    path = f'{DIRECTORYATTACHMENTS}{namefolder}\\inline\\'
+    img_lst = []
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            img_lst.append(filename)
+    print(img_lst)
     soup = BeautifulSoup(item, 'html.parser')
     for index, img in enumerate(soup.findAll('img')):
-        cid = img['src'][4:12] + '.png'
-        img['src'] = f'file:\\\\sft\\app_manager\\attachments\\{namefolder}\\inline\\{cid}'
+        print(img)
 
+        if img['src'][0:4] == 'http':
+            pass
+        else:
+            # cid = img['src'][4:12] + '.png'
+
+            cid = img_lst[index]
+            img['src'] = f'http://10.1.0.31:9800/app_manager/attachments/{namefolder}/inline/{cid}'
     my_html_string = str(soup).replace("'", '')
 
     return my_html_string
@@ -86,7 +94,6 @@ class DirCreated(object):
 
     def __init__(self, emailDB_id):
         self.emailDB_id = str(emailDB_id)
-
 
     """Создание имени директории"""
 
@@ -239,47 +246,40 @@ class ConnectToExchange(object):
                 ID = int(match[0].replace('##', ''))
                 print(ID)
                 direct_for_reply = str(ID)
+                sender_id = 2
+                if ID:  # если найден id письма в subject
 
-                if ID:
                     conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                     database=DATABASEMSSQL)
                     cursor = conn_database.cursor()
-                    sql_query = cursor.execute(f"SELECT open_order, close_order FROM email WHERE id = {ID}")
-                    res = cursor.fetchall()
-                    if res[0][0] == res[0][1]:
-                        html_body = body_parse(direct_for_reply, item.body)
-                        sql = f"""UPDATE email SET text_body = '{html_body}', html_body = '{item.body}' WHERE id = '{ID}' """
-                        result_html = cursor.execute(sql)
+                    # html_body = body_parse(direct_for_reply, item.body)
+                    # sql = f"""UPDATE email SET text_body = '{html_body}' WHERE id = '{ID}' """
+                    # result_html = cursor.execute(sql)
+                    txt = ''
+                    find_indexes = ['[145]', 'From:']
+                    for index in find_indexes:
+                        ind = item.text_body.find(index)
+                        if ind != -1:
+                            txt = item.text_body[:ind]
+                            break
 
-                        # Инфо письмо
-                        subject_update = item.subject
-                        body_update = f'Получен ответ по заявке "{ID}"\nТема: {subject_update}\nОписание: {item.text_body}'
-                        # Отправка инфо письма
-                        self.SendInfoMessage(subject_update, body_update)
-                        printer(f'Ответ по заявке "{ID}" отправлен')
-                        item.delete()
+                    sql_insert_blob_query = """INSERT INTO chat (chat_id, user_name, content, datetime_send,
+                                                                                sender_id) VALUES (%s,%s,%s,%s,%s) """
+                    insert_blob_tuple = (
+                        ID, item.sender.name, txt, item.datetime_sent.astimezone(tz), sender_id)
+                    result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
+                    # Инфо письмо
+                    subject_update = item.subject
+                    body_update = f'Получен ответ по заявке "{ID}"\nТема: {subject_update}\nОписание: {item.text_body}'
+                    # Отправка инфо письма
+                    self.SendInfoMessage(subject_update, body_update)
+                    printer(f'Ответ по заявке "{ID}" отправлен')
+                    item.delete()
 
-                        conn_database.commit()
-                        cursor.close()
-                        conn_database.close()
+                    conn_database.commit()
+                    cursor.close()
+                    conn_database.close()
 
-                    else:
-                        sql_insert_blob_query = f"""UPDATE email SET text_body = '{item.text_body}', 
-                                                                    open_order = '{True}', close_order = '{False}' WHERE id = {ID} """
-                        result = cursor.execute(sql_insert_blob_query)
-
-                        # Инфо письмо
-                        subject_update = item.subject
-                        body_update = f'Заявка "{ID}" возвращена в работу\nТема: {subject_update}\nОписание: {item.text_body}'
-                        # Отправка инфо письма
-                        self.SendInfoMessage(subject_update, body_update)
-                        printer(f'Заявка "{ID}" возвращена в работу')
-
-                        item.delete()
-
-                        conn_database.commit()
-                        cursor.close()
-                        conn_database.close()
 
 
             except:
@@ -306,7 +306,7 @@ class ConnectToExchange(object):
                 # Инфо письмо
                 subject = f'Заявка от {item.sender.name}, {item.subject}'
                 new_request = f'Новая заявка "{emailDB_id}" от {item.sender.name}!'.upper()
-                body = f'{new_request}\nТема: {item.subject}\nОписание:\n{item.text_body}'
+                body = f'{new_request}\nТема: {item.subject}\nСсылка - http://10.1.2.129:8000/message/{emailDB_id}\nОписание:\n{item.text_body}'
 
                 ############################################ Вложения!!
                 # Директория для записи в базу
@@ -323,8 +323,8 @@ class ConnectToExchange(object):
                                 f.close()
                                 # Insert Attachments in database
                                 dir_to_sql = os.path.join(direct, attach.name)
-                                add_Attachments = """INSERT INTO Attachments(link, id_email) VALUES (%s, %s)"""
-                                data_Attachments = (dir_to_sql, emailDB_id)
+                                add_Attachments = """INSERT INTO Attachments(link, id_email, name) VALUES (%s, %s, %s)"""
+                                data_Attachments = (dir_to_sql, emailDB_id, attach.name)
                                 cursor.execute(add_Attachments, data_Attachments)
 
 

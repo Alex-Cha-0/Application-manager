@@ -588,6 +588,14 @@ class System(QMainWindow, Ui_MainWindow):
         else:
             pass
 
+    def get_id_specialist(self):
+        specialist = self.GetNameSpecialist()
+        conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
+                                        database=DATABASEMSSQL)
+        cursor = conn_database.cursor()
+        # Sql query
+        sql_select = cursor.execute(f"""SELECT ID FROM Staff WHERE employee = '{specialist}'""")
+        return cursor.fetchall()[0][0]
     def UpdateEmailOpenOrder(self):
         id = self.CellWasClicked()
         if not self.CheckOrderIsOpen():
@@ -596,6 +604,7 @@ class System(QMainWindow, Ui_MainWindow):
                 open_order = True
                 close_order = False
                 specialist = self.GetNameSpecialist()
+                specialist_id = self.get_id_specialist()
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
@@ -608,7 +617,7 @@ class System(QMainWindow, Ui_MainWindow):
                 """-----------------"""
 
                 sql_insert_blob_query = f"""UPDATE email SET specialist = '{specialist}',control_period = '{date}', 
-                open_order = '{open_order}', close_order = '{close_order}' WHERE id = '{id}' """
+                open_order = '{open_order}', close_order = '{close_order}', specialist_id = '{specialist_id}' WHERE id = '{id}' """
                 # Convert data into tuple format
 
                 result = cursor.execute(sql_insert_blob_query)
@@ -1094,6 +1103,7 @@ class System(QMainWindow, Ui_MainWindow):
         body = edit_body(id_cell, result_[0][0])
         return body
 
+
     def ReplyEmail(self):
         def auth_model(**kwargs):
             # get kerberos ticket
@@ -1188,6 +1198,7 @@ class System(QMainWindow, Ui_MainWindow):
 
         conn = ConnectToExchange(server, email, username, account)
         conn.Send()
+        self.UpdateReplyEmail()
 
     def UpdateReplyEmail(self):
         id = self.IdCellInAppManger()
