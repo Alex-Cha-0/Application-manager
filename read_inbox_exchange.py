@@ -30,10 +30,9 @@ def body_parse(namefolder, item):
     for root, dirs, files in os.walk(path):
         for filename in files:
             img_lst.append(filename)
-    print(img_lst)
+
     soup = BeautifulSoup(item, 'html.parser')
     for index, img in enumerate(soup.findAll('img')):
-        print(img)
 
         if img['src'][0:4] == 'http':
             pass
