@@ -266,10 +266,13 @@ class ConnectToExchange(object):
                                                                                 sender_id) VALUES (%s,%s,%s,%s,%s) """
                     insert_blob_tuple = (
                         ID, item.sender.name, txt, item.datetime_sent.astimezone(tz), sender_id)
-                    result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
+                    cursor.execute(sql_insert_blob_query, insert_blob_tuple)
+
+                    # sql_query = f"""UPDATE email SET is_chat = True WHERE id = '{ID}'"""
+                    # cursor.execute(sql_query)
                     # Инфо письмо
                     subject_update = item.subject
-                    body_update = f'Получен ответ по заявке "{ID}"\nТема: {subject_update}\nОписание: {item.text_body}'
+                    body_update = f'Получен ответ по заявке http://10.1.2.129:22345/applications/message/{ID}\nТема: {subject_update}\nОписание: {item.text_body}'
                     # Отправка инфо письма
                     self.SendInfoMessage(subject_update, body_update)
                     printer(f'Ответ по заявке "{ID}" отправлен')
@@ -289,14 +292,37 @@ class ConnectToExchange(object):
                 conn_database = pymssql.connect(server=SERVERMSSQL, user=USERMSSQL, password=PASSWORDMSSQL,
                                                 database=DATABASEMSSQL)
                 cursor = conn_database.cursor()
-                # Sql query
-                sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy,
-                                                            datetime_send, yes_no_attach,text_body, recipients, uid_Division, open_order, close_order, html_body) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
+                printer(f'Получаем автора заявки')
+                cursor.execute(f"SELECT id from applications_orderauthor where author = '{item.sender.name}'")
+                result_author = cursor.fetchall()
+                if result_author:
+                    printer(f'Автор заявки уже записан')
+                    # Sql query
+                    sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy,
+                                                                               datetime_send, yes_no_attach,text_body, recipients, uid_Division, open_order, close_order, html_body, author_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
 
-                insert_blob_tuple = (
-                    item.subject, item.sender.name, item.sender.email_address, item.display_cc,
-                    item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to,
-                    uid_Division, open_order, close_order, item.body)
+                    insert_blob_tuple = (
+                        item.subject, item.sender.name, item.sender.email_address, item.display_cc,
+                        item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to,
+                        uid_Division, open_order, close_order, item.body, int(result_author[0][0]))
+                    printer('author already in base')
+                else:
+                    printer('Автор не найден')
+                    author_sql_quary = f"INSERT INTO applications_orderauthor(author, email) VALUES (%s,%s)"
+                    author_blob_tuple = (item.sender.name, item.sender.email_address)
+                    cursor.execute(author_sql_quary, author_blob_tuple)
+                    printer('Новый автор записан в базу')
+                    author_id = cursor.lastrowid
+
+                    sql_insert_blob_query = """INSERT INTO email (subject, sender_name, sender_email, copy,
+                                                                                                   datetime_send, yes_no_attach,text_body, recipients, uid_Division, open_order, close_order, html_body, author_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) """
+
+                    insert_blob_tuple = (
+                        item.subject, item.sender.name, item.sender.email_address, item.display_cc,
+                        item.datetime_sent.astimezone(tz), item.has_attachments, item.body, item.display_to,
+                        uid_Division, open_order, close_order, item.body, author_id)
+                    print('author add in base')
+
                 result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 emailDB_id = cursor.lastrowid
 
@@ -305,7 +331,7 @@ class ConnectToExchange(object):
                 # Инфо письмо
                 subject = f'Заявка от {item.sender.name}, {item.subject}'
                 new_request = f'Новая заявка "{emailDB_id}" от {item.sender.name}!'.upper()
-                body = f'{new_request}\nТема: {item.subject}\nСсылка - http://10.1.2.129:8000/message/{emailDB_id}\nОписание:\n{item.text_body}'
+                body = f'{new_request}\nТема: {item.subject}\nСсылка - http://10.1.2.129:22345/applications/message/{emailDB_id}\nОписание:\n{item.text_body}'
 
                 ############################################ Вложения!!
                 # Директория для записи в базу
